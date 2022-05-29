@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom'
 const Navbar = () => {
   return (
     <div>
+   
       <nav  className="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a className="navbar-brand" href="#">ANOR</a>
+        <Link to="/" >
+  <div className="navbar-brand" >ANOR</div>
+        </Link>
   <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span className="navbar-toggler-icon"></span>
   </button>
@@ -17,10 +20,14 @@ const Navbar = () => {
         </Link>
       </li>
       <li className="nav-item">
-        <a className="nav-link" href="/products">Продукты</a>
+        <Link to="/products" >
+        <div className="nav-link" >Продукты</div>
+        </Link>
       </li>
       <li className="nav-item">
-        <a className="nav-link" href="/details">Детали</a>
+        <Link to="/details" >
+        <div className="nav-link" >Детали</div>
+        </Link>
       </li>
       {/* <li className="nav-item dropdown">
         <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

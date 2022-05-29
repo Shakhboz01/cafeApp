@@ -146,7 +146,7 @@ const findQuantity=(item,name)=>{
 </Box>
 
       <TableContainer   >
-          {data.map((itema,ind)=>(
+          {data && data.map((itema,ind)=>(
 
           
   <Table color='blackAlpha.100' background='#63ebd2' width='90%' margin='100px auto'  key={ind} variant='striped' colorScheme='teal'>

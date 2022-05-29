@@ -10,12 +10,6 @@ import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
 import { Button } from '@chakra-ui/react';
 import {Menu,MenuButton,MenuList,MenuItem,  } from '@chakra-ui/react';
-import firebase from '../firebase.config';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import { useNavigate } from 'react-router-dom';
 import {
     AlertDialog,
@@ -63,7 +57,7 @@ background:${prop=>{
 
 `
 
-const Alert=({orderId,numberOfPeople,setNumberOfPeople,tableNumber,children})=>{
+const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,children})=>{
     
     const db=getDatabase();
     let id=uuidv4()
@@ -71,6 +65,8 @@ const Alert=({orderId,numberOfPeople,setNumberOfPeople,tableNumber,children})=>{
     const cancelRef = React.useRef()
     const navigate=useNavigate();
     let today=new Date()
+
+
     const createTable=()=>{
         set(ref(db, 'table/'+tableNumber+'/orders'), {
              tableNumber,
@@ -82,6 +78,12 @@ const Alert=({orderId,numberOfPeople,setNumberOfPeople,tableNumber,children})=>{
         });
         update(ref(db,'todo/'+orderId),{
           status:'full'
+  })
+  set(ref(db,"/notify"),{
+    change:!notify.change,
+    title:"Новый стол",
+    description:`Номер: ${tableNumber} .Количество людей: ${numberOfPeople},`,
+    status:"info"   
   })
     navigate("/order/"+tableNumber+"/"+numberOfPeople+"/"+orderId)
     }
@@ -126,7 +128,7 @@ const Alert=({orderId,numberOfPeople,setNumberOfPeople,tableNumber,children})=>{
 
 //**style */
 
-const Tables = ({tablesData}) => {
+const Tables = ({tablesData,notify}) => {
   const [numberOfPeople,setNumberOfPeople]=useState(1)
     const position=['empty','booked','full']
     let id=uuidv4()
@@ -258,7 +260,7 @@ const [show,setShow]=useState(false)
     {item[1].status!==position[2]&&(
       <div  >
 
-    <Alert  numberOfPeople={numberOfPeople} setNumberOfPeople={(e)=>setNumberOfPeople(e)} orderId={item[1].id} tableNumber={item[1].tableNumber} >Создать</Alert>
+    <Alert notify={notify} numberOfPeople={numberOfPeople} setNumberOfPeople={(e)=>setNumberOfPeople(e)} orderId={item[1].id} tableNumber={item[1].tableNumber} >Создать</Alert>
       </div>
     )}
     {item[1].status!==position[2] &&(

@@ -9,8 +9,7 @@ import Example from "./Components/Dashboard";
 import {BrowserRouter as Router,Routes,Route,Redirect } from "react-router-dom";
 import Orders from "./Tailor/Orders";
  import { useToast } from '@chakra-ui/react'
- import ReactAudioPlayer from 'react-audio-player';
-
+ 
  import {
   Alert,
   AlertIcon,
@@ -27,6 +26,7 @@ import {GiCancel} from 'react-icons/gi'
 
 function App() {
 const [data,setData]=useState([])
+const [notify,setNotify]=useState([]);
 const [open, setOpen] =  useState(false);
 const [tablesData,setTablesData]=useState()
 const toast=useToast()
@@ -47,15 +47,18 @@ const [products,setProducts]=useState([])
 let [change,setChange]=useState("")
 
 useEffect(()=>{
-
 const initialref=ref(db,"/table");
 onValue(initialref, (snapshot) => {
   let datas=snapshot.val()
   if(snapshot.val()){
  setData(Object.entries(datas)) 
  }
-
 });
+onValue(ref(db,"/notify"),(snapshot)=>{
+  if(snapshot.val()){
+    setNotify(snapshot.val())
+  }
+})
 
 
 const starCountRef = ref(db, 'todo/');
@@ -76,17 +79,27 @@ onValue(starCountRef, (snapshot) => {
 })
  
 },[])
-  const [alertData,setAlertData]=useState({
-    show:false,
-    title:"",
-    description:"",
-    status:"success"
-  })
 
-const changeBoolean=()=>{
-  // update(ref(db,"/change"))
-  console.log(change)
-}
+
+  
+
+ useEffect(()=>{
+
+   if(notify.description ){
+    toast({
+      title: notify.title,
+      description: notify.description,
+      status: notify.status,
+      duration: 9000,
+      isClosable: true,
+    })
+    let audioTag=document.getElementById(notify.title.split(" ")[1]);
+  audioTag.currentTime=0;
+  audioTag.play()
+   }
+
+  
+ },[notify.change])
   return (
 
     // <Login/>
@@ -94,23 +107,27 @@ const changeBoolean=()=>{
     
    <Router>
    <Navbar/>
-   
+   <audio id="удален" src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/pause.wav" />
+   <audio id="принят" src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3" />
+   <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
+   <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
+
   {/* <SimpleBackdrop setOpen={(e)=>setOpen(e)} open={open} /> */}
   {/* <ToastExample/> */}
-    {alertData.show&&(
+    {/* {alertData.show&&(
       <Alert width='94%' m='auto' opacity='0.94' zIndex='2' position='fixed' bottom='20'   status={alertData.status}>
   <AlertIcon />
   <AlertTitle>{alertData.title}</AlertTitle>
   <AlertDescription>{alertData.description}</AlertDescription>
   <GiCancel onClick={()=>setAlertData({show:false})} style={{cursor:"pointer",fontSize:"28px",position:"absolute",right:"10",color:"red"}} />
 </Alert>
-    )}
+    )} */}
   
 <Routes>
-<Route exact path="/" element={<Tables tablesData={tablesData} />} />
+<Route exact path="/" element={<Tables notify={notify} tablesData={tablesData} />} />
 <Route path="/products"  element={<Products products={products} />}  /> 
 <Route path="/details"  element={<Details tablesData={tablesData} statuses={statuses} data={data} />}  /> 
-<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders setAlertData={(e)=>setAlertData(e)} callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
+<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
 </Routes>
 
 </Router>

@@ -1,12 +1,10 @@
 import React, { useEffect,useRef, useState } from 'react'
-import ReactToPrint from 'react-to-print';
 import { Navigate, useLocation } from 'react-router-dom'
 import { getDatabase,push,onValue,remove, ref, set, update } from "firebase/database";
 import { Button, Center, Container } from '@chakra-ui/react';
 import {AiFillDelete} from 'react-icons/ai'
 import  styled from 'styled-components'
 import {Box} from "@chakra-ui/react"
-import {AiOutlineComment} from 'react-icons/ai'
 import {BsFillPrinterFill, BsPlusSquareFill} from 'react-icons/bs'
 import {AiFillMinusSquare} from 'react-icons/ai'
 import "./orderStyle.css";
@@ -54,7 +52,7 @@ object-fit:cover;
 `
 
 let number=0;
-function AlertDialogExample({item,setAlertData,setTotalPrice,setOrdersData,open,setOpen,children}) {
+function AlertDialogExample({item,notify,setTotalPrice,setOrdersData,open,setOpen,children}) {
   
      const cancelRef = React.useRef()
      const db=getDatabase()
@@ -88,17 +86,16 @@ const setprice=(e)=>{
          desc,
           id
       });
-
-      setAlertData({
-        show:true,
-        title:`Новый заказ  (${window.location.pathname.split("/")[2]} cтол ) `,
+      set(ref(db,"/notify"),{
+        change:!notify.change,
+        description:`${num} ${item[1].name} / ${window.location.pathname.split("/")[2]}  cтол `,
         status:"success",
-        description:`${item[1].name} ${num} ${item[1].addition} `
+        title:"Заказ принят "
       })
+      console.log(notify)
+    
 
-      setTimeout(() => {
-        setAlertData({show:false})
-      }, 6000);
+     
 
       const starCountRefs = ref(db, "table/"+window.location.pathname.split("/")[2]);
        onValue(starCountRefs, (snapshot) => {
@@ -164,7 +161,7 @@ const setprice=(e)=>{
     )
   }
 
-  function BasicData({data,setTotalPrice,setAlertData,setOrdersData}) {
+  function BasicData({data,setTotalPrice,notify,setOrdersData}) {
     const [items,setItems]=useState()
     let location=useLocation().pathname.split("/")
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -209,7 +206,7 @@ const setprice=(e)=>{
 
           <div onClick={()=>setItems(item)} >
 
-                  <AlertDialogExample setAlertData={setAlertData} setTotalPrice={setTotalPrice} setOrdersData={setOrdersData} item={items}  open={open}  setOpen={(val)=>setOpen(val)}>Далее</AlertDialogExample>
+                  <AlertDialogExample notify={notify}  setTotalPrice={setTotalPrice} setOrdersData={setOrdersData} item={items}  open={open}  setOpen={(val)=>setOpen(val)}>Далее</AlertDialogExample>
           </div>    
                   </Box>
               ))}
@@ -229,7 +226,7 @@ const setprice=(e)=>{
   }
 
 
-const Orders = ({setOpen,setAlertData,statuses}) => {
+const Orders = ({setOpen,notify,statuses}) => {
     let location=useLocation().pathname.split("/")
     const [object,setObject]=useState({})
     const [data,setData]=useState([]);
@@ -304,15 +301,21 @@ else if(item[1].status==statuses[2]){
 }
 const deleteRow=(item)=>{
   remove(ref(db, 'table/'+location[2]+"/"+item[0]))
-  setAlertData({
-    show:true,
-    title:`${item[1].name} в ${location[2]} столе был удален`,
-    description:"",
-    status:"error"
+  // setAlertData({
+  //   show:true,
+  //   title:`${item[1].name} в ${location[2]} столе был удален`,
+  //   description:"",
+  //   status:"error"
+  // })
+  // setTimeout(() => {
+  //   setAlertData({show:false})
+  // }, 5000);
+  set(ref(db,"/notify"),{
+    change:!notify.change,
+    description:`${item[1].name} в ${location[2]} столе был удален!`,
+    status:"error",
+    title:"Заказ удален"
   })
-  setTimeout(() => {
-    setAlertData({show:false})
-  }, 5000);
 }
 //closeTable
 
@@ -320,16 +323,14 @@ const closedTable=()=>{
   update(ref(db,"todo/"+location[4]),{
     status:"empty"
   })
-
-  setAlertData({
-    show:true,
-    title:` стол ${location[2]} был удален `,
-    description:"",
-    status:"warning"
+  set(ref(db,"/notify"),{
+    change:!notify.change,
+    description:`Стол ${location[2]}  был закрыт `,
+    status:"warning",
+    title:"Заказ завершен "
   })
-  setTimeout(() => {
-    setAlertData({show:false})
-  }, 5400);
+ 
+  
   remove(ref(db, 'table/'+location[2]))
 
 
@@ -342,7 +343,7 @@ const componentRef = useRef();
 
   return (
     <div style={{height:'100vh',fontWeight:"500",background:"#181f34f5" ,fontSize:"larger" ,}} >
-      <BasicData setAlertData={setAlertData} setTotalPrice={(e)=>setTotalPrice(e)} setOrdersData={(e)=>setOrdersData(e)} ordersData={ordersData} totalPrice={totalPrice}   data={data} />
+      <BasicData notify={notify}   setTotalPrice={(e)=>setTotalPrice(e)} setOrdersData={(e)=>setOrdersData(e)} ordersData={ordersData} totalPrice={totalPrice}   data={data} />
       <Center>{totalPrice}</Center>
       <div>
      
@@ -352,9 +353,9 @@ const componentRef = useRef();
     <Thead>
       <Tr>
         <Th>Имя</Th>
-        <Th>Количество</Th>
-        <Th >Цена</Th>
+        <Th>Колич.</Th>
         <Th >Статус</Th>
+        <Th >Цена</Th>
       </Tr>
     </Thead>
     <Tbody>
@@ -362,8 +363,8 @@ const componentRef = useRef();
         <Tr key={item[0]} >
         <Td>{item[1].name}  {item[1].desc&&( <i style={{textWrap:"wrap",color:"red",}} >({item[1].desc})</i>)  }  </Td>
         <Td>{item[1].quantity}</Td>
-        <Td >{item[1].total} сум</Td>
         <Td> <Box display='flex' alignItems='center'>  <Button mr='14px' colorScheme={item[1].status==statuses[0]?"blue":item[1].status===statuses[1]?"yellow":item[1].status===statuses[2]?"pink":"green"} onClick={()=>statusChange(item)}   > {item[1].status}</Button>  <AiFillDelete onDoubleClick={()=>deleteRow(item)} style={{cursor:"pointer",color:"red",fontSize:"23px"}} /> </Box></Td>
+        <Td >{item[1].total} сум</Td>
 
       </Tr>
         ))}
