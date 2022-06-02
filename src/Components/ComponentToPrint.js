@@ -37,10 +37,10 @@ function BasicUsage({ref,ordersData,totalPrice,children}) {
             <ModalCloseButton />
             <ModalBody>
               
-              <Table   ref={componentRef} >
-              <TableCaption>Спасибо что выбрали нас!</TableCaption>
-    <Thead>
-      <Tr border="2px solid" >
+              <Table color='black' fontWeight="semibold" width='377px' fontSize="xl"   ref={componentRef} >
+              <TableCaption fontSize='xg' color='black' fontWeight='bold'>Спасибо что выбрали нас!</TableCaption>
+    <Thead fontSize='33px' color='black' >
+      <Tr   fontWeight='bold' color='black' border="2px solid black"  >
         <Th border="2px solid">Имя</Th>
         <Th border="2px solid">Количество</Th>
         <Th border="2px solid" >Цена</Th>

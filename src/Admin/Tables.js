@@ -6,6 +6,8 @@
 
 import React,{useState,useEffect} from 'react'
 import { getDatabase,onValue,remove, ref, set, update } from "firebase/database";
+import {AiFillMinusSquare} from 'react-icons/ai'
+import { BsPlusSquareFill} from 'react-icons/bs'
 import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
 import { Button } from '@chakra-ui/react';
@@ -58,7 +60,6 @@ background:${prop=>{
 `
 
 const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,children})=>{
-    
     const db=getDatabase();
     let id=uuidv4()
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -105,8 +106,10 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
           Укажите количество людей
           </AlertDialogHeader>
 
-          <AlertDialogBody>
-            <Input variant='filled' onChange={(e)=>setNumberOfPeople(e.target.value)} defaultValue={numberOfPeople} required type='number'  />
+          <AlertDialogBody display='flex' alignItems='center' >
+          <BsPlusSquareFill onClick={()=>{setNumberOfPeople(prev=>prev+1)}} style={{cursor:"pointer",fontSize:"35px",marginRight:"10px"}} />
+            <Input m='10px'  width='150px' size='sm' variant='filled' onChange={(e)=>setNumberOfPeople(e.target.value)} value={numberOfPeople} required type='number'  />
+            <AiFillMinusSquare onClick={()=> {if(numberOfPeople>0){setNumberOfPeople(prev=>prev-1)}}} style={{cursor:"pointer",fontSize:"44px"}}  />
           </AlertDialogBody>
 
           <AlertDialogFooter>
@@ -229,7 +232,7 @@ const [show,setShow]=useState(false)
         <div style={{height:"100vh",background:"black"}} >
           <Button m="25px" onClick={()=>setShow(!show)} >{show?"Закрыть":"Добавить стол"}</Button>
           {show&&(
-            <form style={{display:"flex",flexDirection:"column"}} onSubmit={(e)=>handleSubmit(e)}  >
+            <form style={{color:"white",display:"flex",flexDirection:"column"}} onSubmit={(e)=>handleSubmit(e)}  >
             <Input required placeholder='Номер стола' onChange={(e)=>setTableNumber(e.target.value)} defaultValue={tableNumber} name="number" type='number'/>
             <Input   placeholder='Название стола(не обязательно)' onChange={(e)=>setTitle(e.target.value)} defaultValue={title} type='text' name='title'/>
             <Button colorScheme='blue' type='submit' >Добавить</Button>
@@ -244,9 +247,13 @@ const [show,setShow]=useState(false)
     return(
         <Contain status={item[1].status} key={item[0]} >
 
-            <Table>
+            <Table position='absolute' >
                <h1 style={{color:"white",fontWeight:"bold"}} > {item[1].tableNumber}</h1>
-            <Menu style={{position:'absolute',bottom:0,right:0 }} >
+               
+               {item[1].title&&(
+                 <h2  style={{margin:"0 8px",color:"white"}} >{item[1].title}</h2>
+               )}
+            <Menu position='absolute' bottom="0" right='0'  >
   <MenuButton as={Button} >
     :
   </MenuButton>

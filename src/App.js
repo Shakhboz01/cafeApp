@@ -82,7 +82,9 @@ onValue(starCountRef, (snapshot) => {
 
 
   
-
+useEffect(()=>{
+console.log("dataChanged",data)
+},data)
  useEffect(()=>{
 
    if(notify.description ){
@@ -127,7 +129,7 @@ onValue(starCountRef, (snapshot) => {
 <Route exact path="/" element={<Tables notify={notify} tablesData={tablesData} />} />
 <Route path="/products"  element={<Products products={products} />}  /> 
 <Route path="/details"  element={<Details tablesData={tablesData} statuses={statuses} data={data} />}  /> 
-<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
+<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders checkData={data} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
 </Routes>
 
 </Router>

@@ -2,6 +2,7 @@ import React, { useEffect,useRef, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { getDatabase,push,onValue,remove, ref, set, update } from "firebase/database";
 import { Button, Center, Container } from '@chakra-ui/react';
+import ReactToPrint from 'react-to-print';
 import {AiFillDelete} from 'react-icons/ai'
 import  styled from 'styled-components'
 import {Box} from "@chakra-ui/react"
@@ -81,6 +82,7 @@ const setprice=(e)=>{
          quantity:num +" "+item[1].addition,
          name:item[1].name,
          type:item[1].type,
+         printable:item[1].printable,
          status:"добавил",
          total:item[1].price*num,
          desc,
@@ -107,6 +109,7 @@ const setprice=(e)=>{
     number+=parseInt(Object.values(datas)[i].total)
   }
          setTotalPrice(number)
+         number=0
       }
     });
     setDesc("");
@@ -226,7 +229,8 @@ const setprice=(e)=>{
   }
 
 
-const Orders = ({setOpen,notify,statuses}) => {
+const Orders = ({setOpen,checkData,setCheckData,notify,statuses}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure()
     let location=useLocation().pathname.split("/")
     const [object,setObject]=useState({})
     const [data,setData]=useState([]);
@@ -263,10 +267,11 @@ const [ids,setIds]=useState([])
          setOrdersData( Object.entries(datas))
         
 for(let i=0;i<Object.values(datas).length-1;i++){
+  number=0
   number+=parseInt(Object.values(datas)[i].total)
 }
        setTotalPrice(number)
-       number=0
+        number=0
     }
   });
 
@@ -318,20 +323,21 @@ const deleteRow=(item)=>{
   })
 }
 //closeTable
-
+  
 const closedTable=()=>{
   update(ref(db,"todo/"+location[4]),{
     status:"empty"
   })
+  remove(ref(db, 'table/'+location[2]))
+  if(checkData.length==1){
+    setCheckData([])
+  }
   set(ref(db,"/notify"),{
     change:!notify.change,
     description:`Стол ${location[2]}  был закрыт `,
     status:"warning",
     title:"Заказ завершен "
-  })
- 
-  
-  remove(ref(db, 'table/'+location[2]))
+  }) 
 
 
   navigate("/")
@@ -340,10 +346,23 @@ const closedTable=()=>{
 }
 
 const componentRef = useRef();
-
+const singleRef=useRef()
+const [single,setSingle]=useState({})
+const handleChange=(item)=>{
+  let description="."
+  if(item.desc){
+    description=item.desc
+  }
+  setSingle({
+    name:item.name,
+    desc:description,
+    quantity:item.quantity,
+    table:location[2]
+  })
+}
   return (
     <div style={{height:'100vh',fontWeight:"500",background:"#181f34f5" ,fontSize:"larger" ,}} >
-      <BasicData notify={notify}   setTotalPrice={(e)=>setTotalPrice(e)} setOrdersData={(e)=>setOrdersData(e)} ordersData={ordersData} totalPrice={totalPrice}   data={data} />
+      <BasicData  notify={notify}   setTotalPrice={(e)=>setTotalPrice(e)} setOrdersData={(e)=>setOrdersData(e)} ordersData={ordersData} totalPrice={totalPrice}   data={data} />
       <Center>{totalPrice}</Center>
       <div>
      
@@ -363,7 +382,20 @@ const componentRef = useRef();
         <Tr key={item[0]} >
         <Td>{item[1].name}  {item[1].desc&&( <i style={{textWrap:"wrap",color:"red",}} >({item[1].desc})</i>)  }  </Td>
         <Td>{item[1].quantity}</Td>
-        <Td> <Box display='flex' alignItems='center'>  <Button mr='14px' colorScheme={item[1].status==statuses[0]?"blue":item[1].status===statuses[1]?"yellow":item[1].status===statuses[2]?"pink":"green"} onClick={()=>statusChange(item)}   > {item[1].status}</Button>  <AiFillDelete onDoubleClick={()=>deleteRow(item)} style={{cursor:"pointer",color:"red",fontSize:"23px"}} /> </Box></Td>
+        <Td>
+         <Box display='flex' alignItems='center'>  
+          <Button mr='14px' colorScheme={item[1].status==statuses[0]?"blue":item[1].status===statuses[1]?"yellow":item[1].status===statuses[2]?"pink":"green"} onClick={()=>statusChange(item)}   > {item[1].status}</Button>
+
+          <AiFillDelete onDoubleClick={()=>deleteRow(item)} style={{cursor:"pointer",margin:"0 5px",color:"red",fontSize:"23px"}} /> 
+          {item[1].printable&&(
+            <div onClick={()=>{handleChange(item[1]); console.log(single) }} >
+<BsFillPrinterFill onClick={onOpen} style={{cursor:"pointer",color:"green",fontSize:"25px"}} />
+            
+            </div>
+            
+          )}     
+         </Box>
+        </Td>
         <Td >{item[1].total} сум</Td>
 
       </Tr>
@@ -373,14 +405,54 @@ const componentRef = useRef();
     <Tfoot>
       <Tr>
         <Th><Button colorScheme='red' onDoubleClick={()=>{closedTable()}} > Закрыть стол </Button></Th>
-        <Th> 
+        <Th>    
       </Th>
         <Th >        <Button colorScheme='gray' >  <BasicUsage totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >  <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} /></BasicUsage> </Button></Th>
       </Tr>
     </Tfoot>
   </Table>
 </TableContainer>
+<div>
 
+<Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+         
+          <table  style={{margin:"70px 0 ",width:"175px",fontWeight:'bold',fontSize:"30px" ,color:'black' ,border:"2px solid black"}} ref={singleRef} >
+    <thead>
+      <tr style={{border:"2px solid black"}} >
+        <th>Название</th>
+        <th style={{border:"2px solid black"}} >Количество</th>
+        <th>Стол</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style={{padding:"13px 0",border:"2px solid black"}} >
+<td>{single.name}</td>
+<td style={{border:"2px solid black"}} >{single.quantity}</td>
+<td>{single.table}</td>
+      </tr>
+    </tbody>
+    <p style={{fontSize:"22px"}} ><i>{single.desc}</i></p>
+  </table>
+          <ModalFooter>
+            <Button colorScheme='red' mr={3} onClick={onClose}>
+              Закрыть
+            </Button>
+            <ReactToPrint 
+            onClick={onClose}
+            trigger={() => <Button colorScheme="blue" variant='ghost'>Печатать</Button>}
+            content={() => singleRef.current}
+            
+            />
+            
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+  
+</div>
       </div>
     </div>
   )

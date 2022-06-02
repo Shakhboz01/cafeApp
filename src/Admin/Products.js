@@ -10,13 +10,14 @@
 import { getDatabase,onValue,remove, ref, set, update } from "firebase/database";
 import React,{useState,useEffect} from 'react'
 import { Box, Button, Center, Select } from '@chakra-ui/react'
-import { Input,InputGroup,InputLeftElement,InputRightElement } from '@chakra-ui/react'
+import { Input,InputGroup,InputLeftElement,Checkbox } from '@chakra-ui/react'
  import { v4 as uuidv4 } from 'uuid';
 
 
 
 const Products = ({products}) => {
     const [product,setProduct]=useState([]);
+    const [printable,setPrintable]=useState(false)
     const [data,setData]=useState([]);
     const [specifyRow,setSpecifyRow]=useState('');
     const [isUpdating,setIsUpdating]=useState(false)
@@ -28,15 +29,15 @@ const Products = ({products}) => {
     const getData=(e)=>{
         setProduct( prevValues => {
             return { ...prevValues,[e.target.name]: e.target.value}
-         }
-            )
+         })
     }
-    const {name,url,type,addition,price,addInfo}=product
+    const {name,url,type,addition,price}=product
     const handleSubmit=(e)=>{
         e.preventDefault();
         set(ref(db, 'product/'+id), {
-            name,url,type,addition,price,addInfo
-        });  
+            name,url,type,addition,price,printable
+        });
+          
         setShow(false);
         setProduct({})
 
@@ -63,17 +64,17 @@ const setRow=(item)=>{
     setShow(true)
     setIsUpdating(true)
     setProdId(item[0])
-    const {name,url,type,addition,price,addInfo}=item[1]
+    const {name,url,type,addition,price}=item[1]
     setSpecifyRow(item[0])
     setProduct({
-        name,url,type,addition,price,addInfo
+        name,url,type,addition,price
     })
 }
 const updateData=(e)=>{
     e.preventDefault()
   
     update(ref(db,'product/'+specifyRow),{
-        name,url,type,addition,price,addInfo 
+        name,url,type,addition,price,printable 
 })
 setSpecifyRow("");
 setProduct({})
@@ -145,6 +146,9 @@ setShow(false)
           <option value='Напиток' >Напиток</option>
           <option value='Другой' >Другой</option>
       </Select>
+      
+      <Checkbox  checked={printable} onChange={(e)=>setPrintable(e.target.checked)} margin="10px ">Вывести чек на этот товар</Checkbox>
+      
       <Select variant='filled' name="addition" defaultValue={product.addition} onChange={(e)=>getData(e)} placeholder='Указание ' >
           <option value='Штука' >Штука</option>
           <option value='Порс' >Порс</option>
@@ -160,13 +164,7 @@ setShow(false)
     />
     <Input placeholder='Стоимость' required type='number' name="price"defaultValue={product.price} onChange={(e)=>getData(e)}/>
   </InputGroup>
-  <Input
-    color='teal'
-    placeholder='Дополнительная информация (не обязательно)'
-    name="addInfo" onChange={(e)=>getData(e)}
-    defaultValue={product.addInfo}
-    _placeholder={{ color: 'inherit' }}
-    />
+  
     <Button onClick={()=>{setProduct({});setShow(false)}} > Отменить </Button>
   <Button type='submit' variant='outline' >{isUpdating?"Редактировать":"Добавить"}</Button>
         </form>
@@ -183,9 +181,7 @@ setShow(false)
                 <ul style={{fontSize:"large"}} >
                     <li>Имя : {item[1].name} </li>
                     <li>Цена : {item[1].price} </li>
-                    {item[1].addInfo&&(
-                    <li>Информация: {item[1].addInfo} </li>
-                    )}
+                    
                 </ul>
                 <Box>
                 <Button onClick={()=>removeData(item[0])} >Удалить</Button>
