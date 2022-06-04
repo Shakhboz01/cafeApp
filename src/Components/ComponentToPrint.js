@@ -62,12 +62,12 @@ function BasicUsage({setTotalPrice,ordersData,totalPrice,children}) {
               <TableCaption fontSize='xg' color='black'm='0' fontWeight='bold'>90 195 99 92</TableCaption>
     <Thead fontSize='33px' color='black' >
     <Tr   fontWeight='bold'  border="2px solid black"  >
-        <Th fontSize='38px' colSpan={3} textAlign='center' border="2px solid">ANOR CAFE</Th>
+        <Th fontSize='38px' colSpan={3} textAlign='center' color='black' border="2px solid">ANOR CAFE</Th>
        </Tr>
       <Tr   fontWeight='bold' color='black' border="2px solid black"  >
-        <Th border="2px solid">Имя</Th>
-        <Th border="2px solid">Количество</Th>
-        <Th border="2px solid" >Цена</Th>
+        <Th border="2px solid" color='black'>Имя</Th>
+        <Th border="2px solid"color='black'>Количество</Th>
+        <Th border="2px solid" color='black'>Цена</Th>
        </Tr>
     </Thead>
     <Tbody border="2px solid" >
@@ -81,7 +81,7 @@ function BasicUsage({setTotalPrice,ordersData,totalPrice,children}) {
       </Tr>
         
         ))}
-        <Tr  >
+        <Tr border="2px solid" >
            <Td colSpan={2} >Итого:</Td>
            <Td> {totalPrice} сум </Td>
        </Tr>

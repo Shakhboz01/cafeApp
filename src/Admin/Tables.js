@@ -145,7 +145,7 @@ const Tables = ({tablesData,notify}) => {
 //create
     const handleSubmit=(e)=>{
       e.preventDefault()
-      if(tablesData.filter(item=>item[1].tableNumber==tableNumber).length==0){
+       if( !tablesData || tablesData.filter(item=>item[1].tableNumber==tableNumber).length==0){
         set(ref(db, 'todo/'+id), {
           title,
            tableNumber,
@@ -155,10 +155,12 @@ const Tables = ({tablesData,notify}) => {
       setTitle("")
       setTableNumber(null)
       setShow(false)
-      }
-      else{
+       }
+       
+       else  {
         alert("Уже есть стол с таким номером")
       }
+      
         
     }
 
