@@ -17,7 +17,7 @@ import { useDisclosure, Modal,
 
 import { getDatabase,onValue,ref } from "firebase/database";
 
-function BasicUsage({setTotalPrice,ordersData,totalPrice,children}) {
+function BasicUsage({setTotalPrice,ordersData,totalPrice,tableNumber,children}) {
     const { isOpen, onOpen, onClose } = useDisclosure()
       let number=0
     useEffect(()=>{
@@ -86,7 +86,8 @@ function BasicUsage({setTotalPrice,ordersData,totalPrice,children}) {
            <Td> {totalPrice} сум </Td>
        </Tr>
        <Tr  >
-           <Td colSpan={2} >Услуга:</Td>
+            <Td>Стол {tableNumber}</Td>
+           <Td  >Услуга:</Td>
            <Td> 0 сум </Td>
        </Tr>
     </Tbody>

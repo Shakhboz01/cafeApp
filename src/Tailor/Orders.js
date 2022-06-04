@@ -402,7 +402,7 @@ const handleChange=(item)=>{
         <Th><Button colorScheme='red' onDoubleClick={()=>{closedTable()}} > Закрыть стол </Button></Th>
         <Th>
       </Th>
-        <Th >        <Button colorScheme='gray' >  <BasicUsage setTotalPrice={(e)=>setTotalPrice(e)} totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >  <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} /></BasicUsage> </Button></Th>
+        <Th >        <Button colorScheme='gray' >  <BasicUsage tableNumber={window.location.pathname.split("/")[2]} setTotalPrice={(e)=>setTotalPrice(e)} totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >  <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} /></BasicUsage> </Button></Th>
       </Tr>
     </Tfoot>
   </Table>
