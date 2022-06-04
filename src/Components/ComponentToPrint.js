@@ -1,4 +1,4 @@
-import React,{useRef} from "react";
+import React,{useRef,useEffect } from "react";
 import { useDisclosure, Modal,
     ModalOverlay,
     ModalContent,
@@ -8,20 +8,38 @@ import { useDisclosure, Modal,
     Table,
     Thead,
     Tbody,
-    useToast,
-    Tfoot,
     Tr,
     Th,
     Td,
     TableCaption,
-    Select,
-    TableContainer,
-    Text,
-    ModalCloseButton,Button } from "@chakra-ui/react"
+    ModalCloseButton,Button} from  "@chakra-ui/react"
     import ReactToPrint from 'react-to-print';
 
-function BasicUsage({ref,ordersData,totalPrice,children}) {
+import { getDatabase,onValue,ref } from "firebase/database";
+
+function BasicUsage({setTotalPrice,ordersData,totalPrice,children}) {
     const { isOpen, onOpen, onClose } = useDisclosure()
+      let number=0
+    useEffect(()=>{
+      const db=getDatabase()
+      const starCountRefs = ref(db, "table/"+window.location.pathname.split("/")[2]);
+
+
+    onValue(starCountRefs, (snapshot) => {
+    let datas=snapshot.val()
+    if(snapshot.val()){
+    number=0
+    for(let i=0;i<Object.values(datas).length-1;i++){
+    number+=parseInt(Object.values(datas)[i].total)
+    }
+    setTotalPrice(number)
+
+    number=0
+    }
+    });
+
+    },[isOpen])
+
   const componentRef=useRef()
     return (
       <>
@@ -38,8 +56,14 @@ function BasicUsage({ref,ordersData,totalPrice,children}) {
             <ModalBody>
               
               <Table color='black' fontWeight="semibold" width='377px' fontSize="xl"   ref={componentRef} >
-              <TableCaption fontSize='xg' color='black' fontWeight='bold'>Спасибо что выбрали нас!</TableCaption>
+              
+              <TableCaption fontSize='xg' color='black' m='0' fontWeight='bold'>Спасибо что выбрали нас!</TableCaption>
+              
+              <TableCaption fontSize='xg' color='black'm='0' fontWeight='bold'>90 195 99 92</TableCaption>
     <Thead fontSize='33px' color='black' >
+    <Tr   fontWeight='bold'  border="2px solid black"  >
+        <Th fontSize='38px' colSpan={3} textAlign='center' border="2px solid">ANOR CAFE</Th>
+       </Tr>
       <Tr   fontWeight='bold' color='black' border="2px solid black"  >
         <Th border="2px solid">Имя</Th>
         <Th border="2px solid">Количество</Th>
@@ -57,10 +81,13 @@ function BasicUsage({ref,ordersData,totalPrice,children}) {
       </Tr>
         
         ))}
-        <Tr>
-           <Td></Td>
-           <Td>Итого:</Td>
+        <Tr  >
+           <Td colSpan={2} >Итого:</Td>
            <Td> {totalPrice} сум </Td>
+       </Tr>
+       <Tr  >
+           <Td colSpan={2} >Услуга:</Td>
+           <Td> 0 сум </Td>
        </Tr>
     </Tbody>
     

@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useState} from 'react'
 import {
     Table,
     Thead,
@@ -11,14 +11,12 @@ import {
     TableCaption,
     TableContainer,
     Button,
-    Checkbox, CheckboxGroup,
+    Checkbox, 
     Stack,Box,
     Select,
   } from '@chakra-ui/react'
-  import { getDatabase,push,onValue,remove, ref, set, update } from "firebase/database";
+  import { getDatabase, ref,  update } from "firebase/database";
   import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { useEffect } from 'react';
 import styled from "styled-components"
 
 const Colors=styled.div`

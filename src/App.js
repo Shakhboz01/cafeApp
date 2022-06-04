@@ -5,24 +5,11 @@ import Login from "./Components/Login";
 import Navbar from "./Components/Navbar";
 import firebase from "./firebase.config";
 import { getDatabase,onValue,remove, ref, set, update } from "firebase/database";
-import Example from "./Components/Dashboard";
 import {BrowserRouter as Router,Routes,Route,Redirect } from "react-router-dom";
 import Orders from "./Tailor/Orders";
  import { useToast } from '@chakra-ui/react'
  
- import {
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-} from '@chakra-ui/react'
-import SimpleBackdrop from "./Components/BAckdrop";
 import Details from "./Tailor/Details";
-import ToastExample from "./Components/Toast";
-import {GiCancel} from 'react-icons/gi'
-// import { store } from "./Redux/store";
-
-// import {Provider} from 'react-redux'
 
 function App() {
 const [data,setData]=useState([])
@@ -44,7 +31,6 @@ const db=getDatabase()
   //for orders
 const statuses=['добавил','принял','готовил',"доставил"]
 const [products,setProducts]=useState([])
-let [change,setChange]=useState("")
 
 useEffect(()=>{
 const initialref=ref(db,"/table");
@@ -104,7 +90,6 @@ console.log("dataChanged",data)
  },[notify.change])
   return (
 
-    // <Login/>
     <>
     
    <Router>
@@ -114,17 +99,6 @@ console.log("dataChanged",data)
    <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
    <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
 
-  {/* <SimpleBackdrop setOpen={(e)=>setOpen(e)} open={open} /> */}
-  {/* <ToastExample/> */}
-    {/* {alertData.show&&(
-      <Alert width='94%' m='auto' opacity='0.94' zIndex='2' position='fixed' bottom='20'   status={alertData.status}>
-  <AlertIcon />
-  <AlertTitle>{alertData.title}</AlertTitle>
-  <AlertDescription>{alertData.description}</AlertDescription>
-  <GiCancel onClick={()=>setAlertData({show:false})} style={{cursor:"pointer",fontSize:"28px",position:"absolute",right:"10",color:"red"}} />
-</Alert>
-    )} */}
-  
 <Routes>
 <Route exact path="/" element={<Tables notify={notify} tablesData={tablesData} />} />
 <Route path="/products"  element={<Products products={products} />}  /> 

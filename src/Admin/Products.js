@@ -1,14 +1,7 @@
-/*
-Имя продукта
-УРЛ картинки
-ТИП: Хлеб,Напиток(сколько л.),Блюдо(Коса , Порс или кг),Салат
-Описывать как : кг,порс,шт,коса
-Стоимость 
-Доп. описание
-*/
 
-import { getDatabase,onValue,remove, ref, set, update } from "firebase/database";
-import React,{useState,useEffect} from 'react'
+
+import { getDatabase,remove, ref, set, update } from "firebase/database";
+import React,{useState} from 'react'
 import { Box, Button, Center, Select } from '@chakra-ui/react'
 import { Input,InputGroup,InputLeftElement,Checkbox } from '@chakra-ui/react'
  import { v4 as uuidv4 } from 'uuid';
@@ -59,11 +52,9 @@ const removeData=(id)=>{
 }
 
 //update
-const [prodId,setProdId]=useState("")
 const setRow=(item)=>{
     setShow(true)
     setIsUpdating(true)
-    setProdId(item[0])
     const {name,url,type,addition,price}=item[1]
     setSpecifyRow(item[0])
     setProduct({
@@ -80,31 +71,7 @@ setSpecifyRow("");
 setProduct({})
 setShow(false)
 }
- /* update*/
-  
-//panigation
-// const [page, setPage] = React.useState(1);
-//   let prodsPerPage=3;
 
-//   const [filter,setFilter]=useState([]);
-//   let IndexOfLastProd;
-//   let IndexOfFirstProd;
-//   useEffect(()=>{
-//     window.scrollTo(0,0);
-//     },[]);
-
-//   useEffect(()=>{
-//    IndexOfLastProd=page*prodsPerPage;
-//    IndexOfFirstProd=IndexOfLastProd-prodsPerPage;
-//    window.scrollTo(0,400);
-// setFilter(data.slice(IndexOfFirstProd,IndexOfLastProd));
-//   },[page])
-
-//   const handleChange = (event, value) => {
-//     setPage(value);
-//   };
-
-  //**paniga */
 
   return (
     <div style={{zIndex:0,background:"#45c9ff"}} >
@@ -150,10 +117,10 @@ setShow(false)
       <Checkbox  checked={printable} onChange={(e)=>setPrintable(e.target.checked)} margin="10px ">Вывести чек на этот товар</Checkbox>
       
       <Select variant='filled' name="addition" defaultValue={product.addition} onChange={(e)=>getData(e)} placeholder='Указание ' >
-          <option value='Штука' >Штука</option>
+          <option value='Шт.' >Штука</option>
           <option value='Порс' >Порс</option>
           <option value='Коса' >Коса</option>
-          <option value='Кг' >Кг</option>
+          <option value='Кг.' >Кг</option>
       </Select>
       <InputGroup>
     <InputLeftElement

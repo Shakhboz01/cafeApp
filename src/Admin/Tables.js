@@ -1,19 +1,15 @@
-// It should have colors "green-пусто brown-зайнят yellow-желтый"
-//it should display Time(when created) Print,Number of people,Total amount,Time of start(if color is yellow)  
-// Finish button and make it green
-// order beforehand button and display Time of event and Number of people (not required)
 
 
-import React,{useState,useEffect} from 'react'
-import { getDatabase,onValue,remove, ref, set, update } from "firebase/database";
+import React,{useState} from 'react'
+import { getDatabase,remove, ref, set, update } from "firebase/database";
 import {AiFillMinusSquare} from 'react-icons/ai'
 import { BsPlusSquareFill} from 'react-icons/bs'
 import { v4 as uuidv4 } from 'uuid';
 import styled from '@emotion/styled';
-import { Button } from '@chakra-ui/react';
-import {Menu,MenuButton,MenuList,MenuItem,  } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import {
+  Menu,MenuButton,MenuList,MenuItem,
+  Button,
     AlertDialog,
     AlertDialogBody,
     AlertDialogFooter,

@@ -1,25 +1,23 @@
 import React, { useEffect,useRef, useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import {  useLocation } from 'react-router-dom'
 import { getDatabase,push,onValue,remove, ref, set, update } from "firebase/database";
-import { Button, Center, Container } from '@chakra-ui/react';
 import ReactToPrint from 'react-to-print';
 import {AiFillDelete} from 'react-icons/ai'
 import  styled from 'styled-components'
-import {Box} from "@chakra-ui/react"
 import {BsFillPrinterFill, BsPlusSquareFill} from 'react-icons/bs'
 import {AiFillMinusSquare} from 'react-icons/ai'
 import "./orderStyle.css";
  import {
     Modal,
+    Box,
     ModalOverlay,
+    Button,  Container,
     ModalContent,
     ModalHeader,
     ModalFooter,
     ModalBody,
     ModalCloseButton,
-    Portal,
     useDisclosure,
-    Popover,PopoverTrigger,PopoverContent,PopoverHeader,PopoverBody,PopoverFooter,PopoverArrow,  PopoverCloseButton,  PopoverAnchor,
     AlertDialog,
     AlertDialogBody,
     AlertDialogFooter,
@@ -30,22 +28,15 @@ import "./orderStyle.css";
     Table,
     Thead,
     Tbody,
-    useToast,
     Tfoot,
-    Tr,
-    Th,
-    Td,
-    TableCaption,
+    Tr,Th,    Td,
     Select,
     TableContainer,
   } from '@chakra-ui/react'
   import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router-dom';
 import BasicUsage from '../Components/ComponentToPrint';
-const Contain=styled.div`
-display:flex;
-flex-direction:column;
-`
+
 const Image=styled.img`
 width:90px;
 height:80px;
@@ -66,8 +57,26 @@ function AlertDialogExample({item,notify,setTotalPrice,setOrdersData,open,setOpe
       const [price,setPrice]=useState(0);
   let location;
  let id=uuidv4()
+
 useEffect(()=>{
 location=window.location.pathname.split("/")
+
+const starCountRefs = ref(db, "table/"+window.location.pathname.split("/")[2]);
+
+
+onValue(starCountRefs, (snapshot) => {
+  let datas=snapshot.val()
+  if(snapshot.val()){
+     setOrdersData( Object.entries(datas))
+number=0
+for(let i=0;i<Object.values(datas).length-1;i++){
+number+=parseInt(Object.values(datas)[i].total)
+}
+   setTotalPrice(number)
+   number=0
+}
+});
+
 },[])
 
 //setprice
@@ -88,23 +97,21 @@ const setprice=(e)=>{
          desc,
           id
       });
+
       set(ref(db,"/notify"),{
         change:!notify.change,
         description:`${num} ${item[1].name} / ${window.location.pathname.split("/")[2]}  cтол `,
         status:"success",
         title:"Заказ принят "
-      })
-      console.log(notify)
-    
-
-     
-
+      }) 
+      
       const starCountRefs = ref(db, "table/"+window.location.pathname.split("/")[2]);
-       onValue(starCountRefs, (snapshot) => {
+      
+      onValue(starCountRefs, (snapshot) => {
         let datas=snapshot.val()
         if(snapshot.val()){
            setOrdersData( Object.entries(datas))
-  
+  number=0
   for(let i=0;i<Object.values(datas).length-1;i++){
     number+=parseInt(Object.values(datas)[i].total)
   }
@@ -112,12 +119,13 @@ const setprice=(e)=>{
          number=0
       }
     });
+
+
+
     setDesc("");
     setNum(1);
     setOpen(false)
-      // update(ref(db,'table/'+location[2]+"/orders"),{
-      //   totalPrice:totalPrice+price
-      // })
+      
   }
     return (
       <Container>
@@ -244,18 +252,7 @@ const [ids,setIds]=useState([])
     useEffect(()=>{
       const starCountRef = ref(db, 'product/');
       setOpen(true)
-      //getOrders
-    //   onValue(starCountRefs, (snapshot) => {
-    //       let datas=snapshot.val()
-    //       if(snapshot.val()){
-    //          setOrdersData( Object.values(datas))
-    // let number=0;
-    // for(let i=0;i<Object.values(datas).length-1;i++){
-    //   number+=parseInt(Object.values(datas)[i].total)
-    // }
-    //        setTotalPrice(number)
-    //     }
-    //   });
+    
       //getAvailableProducts
     setObject({
         id:location[2],
@@ -298,7 +295,7 @@ const statusChange=(item)=>{
       status:statuses[2]
     })
 }
-else if(item[1].status==statuses[2]){
+else if(item[1].status===statuses[2]){
   update(ref(db,'table/'+location[2]+"/"+item[0]),{
     status:statuses[3]
   })
@@ -306,15 +303,7 @@ else if(item[1].status==statuses[2]){
 }
 const deleteRow=(item)=>{
   remove(ref(db, 'table/'+location[2]+"/"+item[0]))
-  // setAlertData({
-  //   show:true,
-  //   title:`${item[1].name} в ${location[2]} столе был удален`,
-  //   description:"",
-  //   status:"error"
-  // })
-  // setTimeout(() => {
-  //   setAlertData({show:false})
-  // }, 5000);
+
   set(ref(db,"/notify"),{
     change:!notify.change,
     description:`${item[1].name} в ${location[2]} столе был удален!`,
@@ -360,15 +349,15 @@ const handleChange=(item)=>{
     table:location[2]
   })
 }
+
+ 
   return (
     <div style={{height:'100vh',fontWeight:"500",background:"#181f34f5" ,fontSize:"larger" ,}} >
       <BasicData  notify={notify}   setTotalPrice={(e)=>setTotalPrice(e)} setOrdersData={(e)=>setOrdersData(e)} ordersData={ordersData} totalPrice={totalPrice}   data={data} />
-      <Center>{totalPrice}</Center>
       <div>
      
             <TableContainer background='#ae9de2' >
   <Table variant='striped' colorScheme='teal'>
-    <TableCaption fontSize='lg' >{totalPrice}</TableCaption>
     <Thead>
       <Tr>
         <Th>Имя</Th>
@@ -407,7 +396,7 @@ const handleChange=(item)=>{
         <Th><Button colorScheme='red' onDoubleClick={()=>{closedTable()}} > Закрыть стол </Button></Th>
         <Th>    
       </Th>
-        <Th >        <Button colorScheme='gray' >  <BasicUsage totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >  <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} /></BasicUsage> </Button></Th>
+        <Th >        <Button colorScheme='gray' >  <BasicUsage setTotalPrice={(e)=>setTotalPrice(e)} totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >  <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} /></BasicUsage> </Button></Th>
       </Tr>
     </Tfoot>
   </Table>

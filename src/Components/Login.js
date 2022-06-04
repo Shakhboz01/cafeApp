@@ -3,8 +3,7 @@ import { Container,FormControl,
     FormLabel,
     Select,
     Input, Center, Button, Heading } from '@chakra-ui/react'
- 
-
+    
 const Login = () => {
     // const navigate=useNavigate();
     const [role,setRole]=useState("tailor");
