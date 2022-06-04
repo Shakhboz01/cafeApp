@@ -55,26 +55,26 @@ function BasicUsage({setTotalPrice,ordersData,totalPrice,children}) {
             <ModalCloseButton />
             <ModalBody>
               
-              <Table color='black' fontWeight="semibold" width='377px' fontSize="xl"   ref={componentRef} >
+              <Table style={{tableLayout:"auto"}}  width='377px'   color='black' fontWeight="semibold"  overflow="hidden" fontSize="lg"   ref={componentRef} >
               
               <TableCaption fontSize='xg' color='black' m='0' fontWeight='bold'>Спасибо что выбрали нас!</TableCaption>
-              
               <TableCaption fontSize='xg' color='black'm='0' fontWeight='bold'>90 195 99 92</TableCaption>
+
     <Thead fontSize='33px' color='black' >
-    <Tr   fontWeight='bold'  border="2px solid black"  >
-        <Th fontSize='38px' colSpan={3} textAlign='center' color='black' border="2px solid">ANOR CAFE</Th>
+    <Tr    fontWeight='bold'  border="2px solid black"  >
+        <Th width='40%' fontSize='38px' colSpan={3} textAlign='center' color='black' border="2px solid">ANOR CAFE</Th>
        </Tr>
       <Tr   fontWeight='bold' color='black' border="2px solid black"  >
         <Th border="2px solid" color='black'>Имя</Th>
-        <Th border="2px solid"color='black'>Количество</Th>
+        <Th border="2px solid"color='black'>Кол.</Th>
         <Th border="2px solid" color='black'>Цена</Th>
        </Tr>
     </Thead>
-    <Tbody border="2px solid" >
+    <Tbody  border="2px solid" >
     {ordersData.filter((item,ind)=>ind!==ordersData.length-1).map(item=>(
         
-        <Tr border="2px solid" key={item[0]} >
-        <Td border="2px solid" >  {item[1].name}    </Td>
+        <Tr  wordBreak="break-word" overflow='hidden' border="2px solid" key={item[0]} >
+        <Td   border="2px solid" >  {item[1].name}    </Td>
         <Td border="2px solid" >{item[1].quantity}</Td>
         <Td  border="2px solid" >{item[1].total}  </Td>
 

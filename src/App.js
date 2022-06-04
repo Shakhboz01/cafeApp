@@ -103,7 +103,7 @@ console.log("dataChanged",data)
 <Route exact path="/" element={<Tables notify={notify} tablesData={tablesData} />} />
 <Route path="/products"  element={<Products products={products} />}  /> 
 <Route path="/details"  element={<Details tablesData={tablesData} statuses={statuses} data={data} />}  /> 
-<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders checkData={data} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
+<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
 </Routes>
 
 </Router>

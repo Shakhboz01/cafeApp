@@ -142,7 +142,7 @@ setShow(false)
         { products&& products.map(item=>(
             <Box display='flex'  flexDirection='column' m='30px' alignItems='flex-start' justifyContent='center'  maxWidth='sm' key={item[0]} >
 
-                <div style={{height:'200px',width:'100%'}} >
+                <div  style={{flex:1,height:'200px',width:'100%'}} >
                 <img style={{width:'100%',height:"100%",objectFit:"cover"}} src={item[1].url} alt={item[1].name}/>
                 </div>
                 <ul style={{fontSize:"large"}} >
