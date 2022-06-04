@@ -19,6 +19,7 @@ import {
     useDisclosure,
     Input
   } from '@chakra-ui/react'
+import { useEffect } from 'react';
 
 //style
 const Container=styled.div`
@@ -225,6 +226,17 @@ const redirect=(item)=>{
 }
 
 const [show,setShow]=useState(false)
+let array=[]
+let newArray=[]
+useEffect(()=>{
+if(tablesData){
+  for (var i=0;i<tablesData.length;i++){
+   array.push( tablesData[i][1].tableNumber) 
+  }
+}
+newArray.push(array.sort((a,b)=>a-b))
+console.log(newArray)
+},[])
       return (
     
         <div style={{height:"100vh",background:"black"}} >
@@ -241,7 +253,7 @@ const [show,setShow]=useState(false)
 <Container>
 
 
-{ tablesData && tablesData.map(item=>{
+{ tablesData && tablesData.sort((a,b)=>a[1].tableNumber-b[1].tableNumber).map(item=>{
     return(
         <Contain status={item[1].status} key={item[0]} >
 
