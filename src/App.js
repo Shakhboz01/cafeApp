@@ -10,6 +10,7 @@ import Orders from "./Tailor/Orders";
  import { useToast } from '@chakra-ui/react'
  
 import Details from "./Tailor/Details";
+import SpeechFeature from "./features/speech";
 
 function App() {
 const [data,setData]=useState([])
@@ -78,7 +79,7 @@ console.log("dataChanged",data)
       title: notify.title,
       description: notify.description,
       status: notify.status,
-      duration: 9000,
+      duration: 4000,
       isClosable: true,
     })
     let audioTag=document.getElementById(notify.title.split(" ")[1]);
@@ -98,7 +99,7 @@ console.log("dataChanged",data)
    <audio id="принят" src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3" />
    <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
    <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
-
+    {/* <SpeechFeature/> */}
 <Routes>
 <Route exact path="/" element={<Tables notify={notify} tablesData={tablesData} />} />
 <Route path="/products"  element={<Products products={products} />}  /> 

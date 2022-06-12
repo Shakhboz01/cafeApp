@@ -1,21 +1,13 @@
 
 
-import { getDatabase,remove,push, ref, set, update } from "firebase/database";
+import { getDatabase,remove, ref, set, update } from "firebase/database";
 import React,{useState} from 'react'
 import { Box, Button, Center, Select } from '@chakra-ui/react'
 import { Input,InputGroup,InputLeftElement,Checkbox } from '@chakra-ui/react'
  import { v4 as uuidv4 } from 'uuid';
  import {MdAutoDelete,MdFavorite} from 'react-icons/md'
 import {AiFillEdit} from 'react-icons/ai'
-import styled from "styled-components";
-import { mobile } from "../Components/Responsive";
 
-const MainContainer=styled.div`
-display:flex;
-flex-wrap:wrap;
-align-items:center;
-justify-content:center;
-`
 
 const Container=styled.div`
 margin:25px;
@@ -28,56 +20,12 @@ background:black;
 ${mobile(500,{
   margin:"10px 2px"
 })}
+
 `
 
-const SetColor=styled.div`
-background:#fdf5f5;
-box-shadow:
-       inset 0 -3em 3em rgba(0,0,0,0.1),
-             0 0  0 2px rgb(255,255,255),
-             0.3em 0.3em 1em rgba(0,0,0,0.3);
-`
 
-const ImageContainer=styled.div`
-position:relative;
-height:250px;
-width:250px;
-display:flex;
-align-items:center;
-justify-content:center;
-${mobile(500,{
-  height:'150px',
-  width:'210px'
-})}
-`
-const Image=styled.img`
-width:100%;
-height:100%;
-padding:10px;
-object-fit:cover;
-`
-const Info=styled.div`
-width:250px;
-padding:10px;
-display:flex;
-flex-direction:column;
-align-items: center;
-${mobile(500,{
-  padding:'5px'
-})}
-`
-const Title=styled.div`
-letter-spacing:1.7px;
-font-size:18px;
-text-align:center;
-font-weight:bold;
-width:100%;
-word-wrap: break-word;`
 
- 
-const Size=styled.div`
-font-style:italic;
-`
+
 
 const Products = ({products}) => {
     const [product,setProduct]=useState([]);
@@ -126,7 +74,6 @@ const removeData=(id)=>{
 //update
 const setRow=(item)=>{
     setShow(true)
-    window.scrollTo(0,0);
     setIsUpdating(true)
     const {name,url,type,addition,price}=item[1]
     setSpecifyRow(item[0])
@@ -144,16 +91,11 @@ setSpecifyRow("");
 setProduct({})
 setShow(false)
 }
-const popularity=(item)=>{
-    
-    update(ref(db, 'product/'+item[0]), {
-        popular:item[1].popular?false:true
-     });
-}
+
 
   return (
     <div style={{zIndex:0,background:"#45c9ff"}} >
-        <Center  h='100px'  >Продукты</Center>
+        <Center h='100px'  >Продукты</Center>
         <Box maxW='lg'>
 {!show&&(
             <Button onClick={()=>{setShow(true);setIsUpdating(false);setProduct({})}} >Добавить продукт</Button>
@@ -216,33 +158,27 @@ const popularity=(item)=>{
 )}
         
     </Box>
-    <MainContainer>
+    <Center alignItems='center' justifyItems="center"  maxW='100vw' display='grid' gridTemplateColumns="repeat(auto-fill,minmax(230px,1fr))" >
         { products&& products.map(item=>(
-            <Container >
-                <SetColor>
+            <Box display='flex'  flexDirection='column' m='30px' alignItems='flex-start' justifyContent='center'  maxWidth='sm' key={item[0]} >
 
-            {/* // <Box display='flex'  flexDirection='column' m='30px' alignItems='flex-start' justifyContent='center'  maxWidth='sm' key={item[0]} > */}
-
-                <ImageContainer>
-                <Image src={item[1].url} />
-                {/* <img style={{width:'100%',height:"100%",objectFit:"cover"}} src={item[1].url} alt={item[1].name}/> */}
-                </ImageContainer>
-                <Info  >
-                    {/* <li>Имя : {item[1].name} </li>
-                    <li>Цена : {item[1].price} </li> */}
-                    <Title  >{item[1].name}</Title>
-        <Size> {item[1].price} </Size>
-                </Info>
-                <Box background="wheat" mb='8px' width='100%' alignItems='center' justifyContent='space-evenly' display='flex' >
-                <MdAutoDelete onClick={()=>removeData(item[0])} style={{fontSize:'33px',cursor:"pointer",color:"red",  }} />
-                <AiFillEdit onClick={()=>setRow(item)} style={{fontSize:'33px',cursor:"pointer",color:"blue",  }} />
-                <MdFavorite onClick={()=>popularity(item)} style={{fontSize:'33px',cursor:"pointer",color:item[1].popular?"brown":"red",  }} />
+                <div  style={{ height:'200px',width:'200px',overflow:"hidden"}} >
+                <img style={{width:'100%',height:"100%",objectFit:"cover"}} src={item[1].url} alt={item[1].name}/>
+                </div>
+                <ul style={{fontSize:"large"}} >
+                    <li>Имя : {item[1].name} </li>
+                    <li>Цена : {item[1].price} </li>
+                    
+                </ul>
+                <Box width='100%' alignItems='center' justifyContent='space-evenly' display='flex' >
+                <MdAutoDelete onClick={()=>removeData(item[0])} style={{fontSize:'33px',color:"",  }} />
+                <AiFillEdit onClick={()=>setRow(item)} style={{fontSize:'33px',color:"",  }} />
+                <MdFavorite style={{fontSize:'33px',color:"",  }} />
                 </Box>
-            {/* // </Box> */}
-                </SetColor>
-    </Container>
+            </Box>
         ))}
-    </MainContainer>
+ 
+    </Center>
     </div>
   )
 }

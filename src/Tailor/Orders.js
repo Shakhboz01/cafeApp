@@ -82,7 +82,7 @@ const setprice=(e)=>{
     const handleSubmit=(e)=>{
       e.preventDefault()
         push(ref(db, 'table/'+window.location.pathname.split("/")[2]), {
-         quantity:num +" "+item[1].addition,
+         quantity:num +" "+item[1].addition ,
          name:item[1].name,
          type:item[1].type,
          printable:item[1].printable,
@@ -186,6 +186,7 @@ const setprice=(e)=>{
     const [search,setSearch]=useState("");
     const [displayIndex,setDisplayIndex]=useState(null)
     const changeDisplay=(index)=>{
+setSearch("")
 setDisplayIndex(index)
     }
     return (
@@ -201,7 +202,7 @@ setDisplayIndex(index)
             <ModalCloseButton />
             <ModalBody color='whatsapp.100' >
               <Box display='flex' alignItems='center' justifyContent='space-evenly' >
-                  <Input maxWidth='200px' onChange={(e)=>setSearch(e.target.value)} placeholder='Найти' />
+                  <Input maxWidth='200px' onChange={(e)=>setSearch(e.target.value)} value={search} placeholder='Найти' />
                   <Select variant="outline" bg="wheat" color='black' onChange={(e)=>setTypes(e.target.value)} maxWidth='100px' size='xm'  placeholder='Тип' >
 
 <option value='Все'  >Все</option>
@@ -219,7 +220,7 @@ setDisplayIndex(index)
               .filter(item=>{
       if(types!=="Все"){return item[1].type==types}
       else{return item}
-    }).map((item,index)=>{
+    }).sort((a,b)=>a[1].popular===b[1].popular?0 : a[1].popular? -1 : 1).map((item,index)=>{
 
       return(
         <Box alignItems='center' m='12px' display='flex' justifyContent='space-around' key={item[0]}>
@@ -289,6 +290,12 @@ const Orders = ({setOpen,specialProducts,checkData,setCheckData,notify,statuses}
 setOpen(false)
     },[])
 
+    useEffect(()=>{
+      if(notify.title==="Заказ завершен"){
+  navigate("/")
+      }
+    },[notify.change])
+
 const statusChange=(item)=>{
   if(item[1].status==statuses[0]){
       update(ref(db,'table/'+location[2]+"/"+item[0]),{
@@ -330,7 +337,7 @@ const closedTable=()=>{
     change:!notify.change,
     description:`Стол ${location[2]}  был закрыт `,
     status:"warning",
-    title:"Заказ завершен "
+    title:"Заказ завершен"
   })
 
 
@@ -383,7 +390,7 @@ const handleChange=(item)=>{
 
           <AiFillDelete onDoubleClick={()=>deleteRow(item)} style={{cursor:"pointer",margin:"0 5px",color:"red",fontSize:"23px"}} />
           {item[1].printable&&(
-            <div onClick={()=>{handleChange(item[1]); console.log(single) }} >
+            <div onClick={()=>{handleChange(item[1]) }} >
 <BsFillPrinterFill onClick={onOpen} style={{cursor:"pointer",color:"green",fontSize:"25px"}} />
 
             </div>

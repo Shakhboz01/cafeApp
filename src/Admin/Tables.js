@@ -189,14 +189,7 @@ setSpecifyRow("")
 
 
  //updateStatus
- let color="green";
-if(status==position[0]){
-    color="green"
-}
-else if(status==position[1]){
-    color='brown'
-}
-else{color='red'}
+ 
 
 const changeStatus=(prop,item)=>{
     if(prop==position[1]){
@@ -239,7 +232,7 @@ console.log(newArray)
 },[])
       return (
     
-        <div style={{height:"100vh",background:"black"}} >
+        <div style={{ background:"black"}} >
           <Button m="25px" onClick={()=>setShow(!show)} >{show?"Закрыть":"Добавить стол"}</Button>
           {show&&(
             <form style={{color:"white",display:"flex",flexDirection:"column"}} onSubmit={(e)=>handleSubmit(e)}  >
