@@ -292,11 +292,11 @@ const Orders = ({setOpen,specialProducts,checkData,setCheckData,notify,statuses}
 setOpen(false)
     },[])
 
-    useEffect(()=>{
-      if(notify.title==="Заказ завершен"){
-  navigate("/")
-      }
-    },[notify.change])
+  //   useEffect(()=>{
+  //     if(notify.title==="Заказ завершен"){
+  // navigate("/")
+  //     }
+  //   },[notify.change])
 
 const statusChange=(item)=>{
   if(item[1].status==statuses[0]){
