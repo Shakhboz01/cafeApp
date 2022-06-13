@@ -83,7 +83,7 @@ console.log("dataChanged",data)
       isClosable: true,
     })
     let audioTag=document.getElementById(notify.title.split(" ")[1]);
-   
+  audioTag.currentTime=0;
   audioTag.play()
    }
 
