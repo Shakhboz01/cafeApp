@@ -44,7 +44,7 @@ object-fit:cover;
 `
 
 let number=0;
-function AlertDialogExample({item,notify,setDisplayIndex,open,setOpen,children}) {
+function AlertDialogExample({item,setSearch,notify,setDisplayIndex,open,setOpen,children}) {
 
      const cancelRef = React.useRef()
      const db=getDatabase()
@@ -98,6 +98,7 @@ const setprice=(e)=>{
         status:"success",
         title:"Заказ принят"
       })
+      setSearch("")
       setDisplayIndex(null)
 
       // const starCountRefs = ref(db, "table/"+window.location.pathname.split("/")[2]);
@@ -150,7 +151,7 @@ const setprice=(e)=>{
                 <AiFillMinusSquare onClick={()=> {if(num>0){setNum(prev=>prev-1)}}} style={{cursor:"pointer",fontSize:"38px"}}  />
                 </div>
                   {displayInput?(
-                    <Button onClick={()=>setDisplayInput(false)} colorScheme='red' >
+                    <Button onClick={()=>{setDisplayInput(false)}} colorScheme='red' >
                     <AiFillEdit/>
                     </Button>
                   ):(
@@ -183,10 +184,11 @@ const setprice=(e)=>{
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [open,setOpen]=useState(false);
     const [types,setTypes]=useState("Все");
-    const [search,setSearch]=useState("");
+     
     const [displayIndex,setDisplayIndex]=useState(null)
+    const [search,setSearch]=useState("")
     const changeDisplay=(index)=>{
-setSearch("")
+
 setDisplayIndex(index)
     }
     return (
@@ -216,11 +218,11 @@ setDisplayIndex(index)
               <hr style={{color:"white"}} />
                 <Container>
 
-              {data.filter(filt=>filt[1].name.toLowerCase().includes(search.toLowerCase()))
+              {data.sort((a,b)=>a[1].popular===b[1].popular?0 : a[1].popular? -1 : 1).filter(filt=>filt[1].name.toLowerCase().includes(search.toLowerCase()))
               .filter(item=>{
       if(types!=="Все"){return item[1].type==types}
       else{return item}
-    }).sort((a,b)=>a[1].popular===b[1].popular?0 : a[1].popular? -1 : 1).map((item,index)=>{
+    }).map((item,index)=>{
 
       return(
         <Box alignItems='center' m='12px' display='flex' justifyContent='space-around' key={item[0]}>
@@ -233,7 +235,7 @@ setDisplayIndex(index)
 ):(
            <div onClick={()=>setItems(item)} >
 
-                  <AlertDialogExample setDisplayIndex={(e)=>setDisplayIndex(e)} notify={notify}   item={items}  open={open}  setOpen={(val)=>setOpen(val)}/>
+                  <AlertDialogExample search={search} setSearch={(e)=>setSearch(e)} setDisplayIndex={(e)=>setDisplayIndex(e)} notify={notify}   item={items}  open={open}  setOpen={(val)=>setOpen(val)}/>
           </div>   
 )}
                   
