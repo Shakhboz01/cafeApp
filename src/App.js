@@ -82,9 +82,9 @@ console.log("dataChanged",data)
       duration: 4000,
       isClosable: true,
     })
-    let audioTag=document.getElementById(notify.title.split(" ")[1]);
-  audioTag.currentTime=0;
-  audioTag.play()
+  //   let audioTag=document.getElementById(notify.title.split(" ")[1]);
+  // audioTag.currentTime=0;
+  // audioTag.play()
    }
 
   

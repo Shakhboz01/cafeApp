@@ -296,6 +296,7 @@ setOpen(false)
   //     if(notify.title==="Заказ завершен"){
   // navigate("/")
   //     }
+  
   //   },[notify.change])
 
 const statusChange=(item)=>{
