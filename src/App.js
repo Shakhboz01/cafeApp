@@ -18,6 +18,8 @@ const [notify,setNotify]=useState([]);
 const [open, setOpen] =  useState(false);
 const [tablesData,setTablesData]=useState()
 const toast=useToast()
+const [numberOfPeople,setNumberOfPeople]=useState(1)
+
 const callToast=()=>{
  return toast({
     title:"title",
@@ -68,10 +70,7 @@ onValue(starCountRef, (snapshot) => {
 },[])
 
 
-  
-useEffect(()=>{
-console.log("dataChanged",data)
-},data)
+
  useEffect(()=>{
 
    if(notify.description ){
@@ -82,9 +81,9 @@ console.log("dataChanged",data)
       duration: 4000,
       isClosable: true,
     })
-  //   let audioTag=document.getElementById(notify.title.split(" ")[1]);
-  // audioTag.currentTime=0;
-  // audioTag.play()
+    let audioTag=document.getElementById(notify.title.split(" ")[1]);
+  audioTag.currentTime=0;
+  audioTag.play()
    }
 
   
@@ -94,17 +93,17 @@ console.log("dataChanged",data)
     <>
     
    <Router>
-   <Navbar/>
+   <Navbar tablesData={tablesData} numberOfPeople={numberOfPeople} />
    <audio id="удален" src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/pause.wav" />
    <audio id="принят" src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3" />
    <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
    <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
     {/* <SpeechFeature/> */}
 <Routes>
-<Route exact path="/" element={<Tables notify={notify} tablesData={tablesData} />} />
+<Route exact path="/" element={<Tables numberOfPeople={numberOfPeople} setNumberOfPeople={(e)=>setNumberOfPeople(e)} notify={notify} tablesData={tablesData} />} />
 <Route path="/products"  element={<Products products={products} />}  /> 
 <Route path="/details"  element={<Details tablesData={tablesData} statuses={statuses} data={data} />}  /> 
-<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
+<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
 </Routes>
 
 </Router>

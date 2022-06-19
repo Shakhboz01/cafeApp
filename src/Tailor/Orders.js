@@ -182,6 +182,7 @@ const setprice=(e)=>{
     const [items,setItems]=useState()
     let location=useLocation().pathname.split("/")
     const { isOpen, onOpen, onClose } = useDisclosure()
+    const [openMenu,setOpenMenu] = useState(true)
     const [open,setOpen]=useState(false);
     const [types,setTypes]=useState("Все");
      
@@ -190,20 +191,21 @@ const setprice=(e)=>{
     const changeDisplay=(index)=>{
 
 setDisplayIndex(index)
+
     }
+
+ 
     return (
       <Container >
-        <Box display='flex' alignItems='center'pt='35px' justifyContent='space-between' >
-        <Button onClick={onOpen} colorScheme='blue' >Добавить продукт</Button>
-         </Box>
+        {/* <Box display='flex' alignItems='center'pt='35px' justifyContent='space-between' > */}
+        <Button onClick={()=>setOpenMenu(true)} m="72px 0 10px 0 " colorScheme='blue' >Добавить продукт {location[2]} </Button>
+         {/* </Box> */}
 
-        <Modal  isOpen={isOpen} onClose={onClose}>
+        <Modal scrollBehavior='inside' isOpen={openMenu} onClose={()=>setOpenMenu(false)}>
           <ModalOverlay  colorScheme='red' />
           <ModalContent background='rgb(10 25 41)'  >
-            <ModalHeader color='whatsapp.100' >Стол {location[2]} </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody color='whatsapp.100' >
-              <Box display='flex' alignItems='center' justifyContent='space-evenly' >
+            <ModalHeader color='whatsapp.100' > 
+            <Box    display='flex' alignItems='center' justifyContent='space-evenly' >
                   <Input maxWidth='200px' onChange={(e)=>setSearch(e.target.value)} value={search} placeholder='Найти' />
                   <Select variant="outline" bg="wheat" color='black' onChange={(e)=>setTypes(e.target.value)} maxWidth='100px' size='xm'  placeholder='Тип' >
 
@@ -215,7 +217,10 @@ setDisplayIndex(index)
   <option value='Другой'>Другой</option>
 </Select>
               </Box>
-              <hr style={{color:"white"}} />
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody  color='whatsapp.100' >
+        
                 <Container>
 
               {data.sort((a,b)=>a[1].popular===b[1].popular?0 : a[1].popular? -1 : 1).filter(filt=>filt[1].name.toLowerCase().includes(search.toLowerCase()))
@@ -234,34 +239,29 @@ setDisplayIndex(index)
     </>
 ):(
            <div onClick={()=>setItems(item)} >
-
                   <AlertDialogExample search={search} setSearch={(e)=>setSearch(e)} setDisplayIndex={(e)=>setDisplayIndex(e)} notify={notify}   item={items}  open={open}  setOpen={(val)=>setOpen(val)}/>
-          </div>   
-)}
-                  
-
+            </div>   )}
                   </Box>
-      )
-                  
-  })}
+)})}
       
 
               </Container>
             </ModalBody>
 
             <ModalFooter>
-              <Button colorScheme='blue' mr={3} onClick={onClose}>
+              <Button colorScheme='red' mr={3} onClick={()=>setOpenMenu(false)}>
                 Закрыть
               </Button>
              </ModalFooter>
           </ModalContent>
         </Modal>
       </Container>
+ 
     )
   }
 
 
-const Orders = ({setOpen,specialProducts,checkData,setCheckData,notify,statuses}) => {
+const Orders = ({setOpen,tablesData,specialProducts,checkData,setCheckData,notify,statuses}) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
     let location=useLocation().pathname.split("/")
     const [object,setObject]=useState({})
@@ -273,7 +273,7 @@ const Orders = ({setOpen,specialProducts,checkData,setCheckData,notify,statuses}
     const starCountRefs = ref(db, "table/"+location[2]);
   const navigate=useNavigate()
     useEffect(()=>{
-      const starCountRef = ref(db, 'product/');
+      // const starCountRef = ref(db, 'product/');
       setOpen(true)
 
       //getAvailableProducts
@@ -286,16 +286,25 @@ const Orders = ({setOpen,specialProducts,checkData,setCheckData,notify,statuses}
       if(snapshot.val()){
          setOrdersData( Object.entries(datas))
     }
-  });
-
-
+  });   
 setOpen(false)
     },[])
 
+    useEffect(()=>{
+ let currentTableNumber = tablesData.find(num => num[1].tableNumber == location[2] )
+ if(currentTableNumber[1].status =='empty' ){
+  navigate("/")
+ }
+
+    },[tablesData])
   //   useEffect(()=>{
-  //     if(notify.title==="Заказ завершен"){
+  //     let navigation = true
+  //     if(notify.title==="Заказ завершен" && navigation == true ){
   // navigate("/")
   //     }
+
+
+  //   navigation = false
   
   //   },[notify.change])
 
@@ -411,9 +420,11 @@ const handleChange=(item)=>{
       <Tr>
         <Th><Button colorScheme='red' onDoubleClick={()=>{closedTable()}} > Закрыть стол </Button></Th>
         <Th>
+        Cтол {window.location.pathname.split("/")[2]}
       </Th>
-        <Th >        <Button colorScheme='gray' >  <BasicUsage tableNumber={window.location.pathname.split("/")[2]} setTotalPrice={(e)=>setTotalPrice(e)} totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >  <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} /></BasicUsage> </Button></Th>
+        <Th position='fixed' top='52px' right='15px' >          <BasicUsage tableNumber={window.location.pathname.split("/")[2]} setTotalPrice={(e)=>setTotalPrice(e)} totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >  <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} /></BasicUsage> </Th>
       </Tr>
+      
     </Tfoot>
   </Table>
 </TableContainer>
@@ -449,7 +460,6 @@ const handleChange=(item)=>{
             onClick={onClose}
             trigger={() => <Button colorScheme="blue" variant='ghost'>Печатать</Button>}
             content={() => singleRef.current}
-
             />
 
           </ModalFooter>

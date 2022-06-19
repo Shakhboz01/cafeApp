@@ -72,7 +72,7 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
             status:"active",
              id,
              start:today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+" / "+today.getHours() + ":" + today.getMinutes(),
-            totalPrice:0
+            
         });
         update(ref(db,'todo/'+orderId),{
           status:'full'
@@ -105,7 +105,7 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
 
           <AlertDialogBody display='flex' alignItems='center' >
           <BsPlusSquareFill onClick={()=>{setNumberOfPeople(prev=>prev+1)}} style={{cursor:"pointer",fontSize:"35px",marginRight:"10px"}} />
-            <Input m='10px'  width='150px' size='sm' variant='filled' onChange={(e)=>setNumberOfPeople(e.target.value)} value={numberOfPeople} required type='number'  />
+            <Input  autoFocus m='10px'  width='150px' size='sm' variant='filled' onChange={(e)=>setNumberOfPeople(e.target.value)} value={numberOfPeople} required type='number'  />
             <AiFillMinusSquare onClick={()=> {if(numberOfPeople>0){setNumberOfPeople(prev=>prev-1)}}} style={{cursor:"pointer",fontSize:"44px"}}  />
           </AlertDialogBody>
 
@@ -128,8 +128,7 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
 
 //**style */
 
-const Tables = ({tablesData,notify}) => {
-  const [numberOfPeople,setNumberOfPeople]=useState(1)
+const Tables = ({tablesData,numberOfPeople,notify,setNumberOfPeople}) => {
     const position=['empty','booked','full']
     let id=uuidv4()
     const db = getDatabase();
@@ -228,12 +227,11 @@ if(tablesData){
   }
 }
 newArray.push(array.sort((a,b)=>a-b))
-console.log(newArray)
 },[])
       return (
     
         <div style={{ background:"black"}} >
-          <Button m="25px" onClick={()=>setShow(!show)} >{show?"Закрыть":"Добавить стол"}</Button>
+          <Button m="70px 10px 10px 10px " onClick={()=>setShow(!show)} >{show?"Закрыть":"Добавить стол"}</Button>
           {show&&(
             <form style={{color:"white",display:"flex",flexDirection:"column"}} onSubmit={(e)=>handleSubmit(e)}  >
             <Input required placeholder='Номер стола' onChange={(e)=>setTableNumber(e.target.value)} defaultValue={tableNumber} name="number" type='number'/>

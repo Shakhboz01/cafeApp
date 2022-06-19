@@ -1,10 +1,24 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-const Navbar = () => {
+import { useNavigate } from 'react-router-dom'
+
+
+const Navbar = ({tablesData,numberOfPeople}) => {
+  const navigate = useNavigate()
+  const navigations=(item)=>{
+    navigate("/")
+    setTimeout(() => {
+      navigate("order"+"/"+item[1].tableNumber+"/"+numberOfPeople+"/"+item[0])      
+    }, 100);
+    // if(window.location.pathname.split("/")[1] == "order" ){
+    //   window.location.reload();
+    // }
+  }
   return (
-    <div>
-   
-      <nav  className="navbar navbar-expand-lg navbar-dark bg-dark">
+    
+    <div style={{position:"fixed", width:"100vw",zIndex:2 }} >
+    
+      <nav   className="navbar navbar-expand-lg  navbar-fixed navbar-dark bg-dark">
         <Link to="/" >
   <div className="navbar-brand" >ANOR</div>
         </Link>
@@ -16,7 +30,7 @@ const Navbar = () => {
     <ul className="navbar-nav mr-auto">
       <li className="nav-item active">
         <Link to='/' >
-        <div className="nav-link" style={{cursor:'pointer'}} >Столы <span className="sr-only">(current)</span></div>
+        <div className="nav-link" style={{cursor:'pointer'}} >Домой <span className="sr-only">(current)</span></div>
         </Link>
       </li>
       <li className="nav-item">
@@ -29,12 +43,26 @@ const Navbar = () => {
         <div className="nav-link" >Детали</div>
         </Link>
       </li>
+
+      <li class="dropdown">
+              <div class="dropdown-toggle nav-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Столы<span class="caret"></span></div>
+              <ul class=" bg-dark dropdown-menu">
+              {tablesData && tablesData.sort((a,b)=>a[1].tableNumber-b[1].tableNumber)
+              .filter(table=>table[1].status == 'full').map(item=>(
+                // <Link   to={"order"+"/"+item[1].tableNumber+"/"+numberOfPeople+"/"+item[0]} >
+                <div key={item[0]} onClick={()=>navigations(item)} style={{cursor:"pointer"}}  className='nav-link'  >{item[1].tableNumber} {item[1].title} </div>
+                // </Link>
+              ))}
+                
+              </ul>
+            </li>
       
     </ul>
 
   </div>
 </nav>
-    </div>
+
+</div>
   )
 }
 
