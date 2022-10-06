@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics} from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -13,10 +14,11 @@ const firebaseConfig = {
   messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_APPS_ID,
   measurementId: process.env.REACT_APP_MEASUREMENT_ID,
-  databaseURL: REACT_APP_DATABASE_URL
+  databaseURL: process.env.REACT_APP_DATABASE_URL
 };
 
 // Initialize Firebase
 const firebase = initializeApp(firebaseConfig);
 const analytics = getAnalytics(firebase);
-export default firebase
+export const db =getFirestore(firebase)
+

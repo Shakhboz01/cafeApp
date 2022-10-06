@@ -1,16 +1,18 @@
 import { useEffect,useState } from "react";
 import Products from "./Admin/Products";
+import React from "react";
 import Tables from "./Admin/Tables";
-import Login from "./Components/Login";
 import Navbar from "./Components/Navbar";
-import firebase from "./firebase.config";
-import { getDatabase,onValue,remove, ref, set, update } from "firebase/database";
-import {BrowserRouter as Router,Routes,Route,Redirect } from "react-router-dom";
+import { getDatabase, onValue, ref } from "firebase/database";
+import {BrowserRouter as Router,Routes,Route} from "react-router-dom";
 import Orders from "./Tailor/Orders";
- import { useToast } from '@chakra-ui/react'
- 
+import {useToast} from '@chakra-ui/react'
 import Details from "./Tailor/Details";
-import SpeechFeature from "./features/speech";
+import { db } from "./firebase.config";
+
+export const MyContext = React.createContext();
+
+
 
 function App() {
 const [data,setData]=useState([])
@@ -29,50 +31,40 @@ const callToast=()=>{
     isClosable: true,
   })
 }
-const db=getDatabase()
 
   //for orders
 const statuses=['добавил','принял','готовил',"доставил"]
 const [products,setProducts]=useState([])
 
 useEffect(()=>{
-const initialref=ref(db,"/table");
-onValue(initialref, (snapshot) => {
-  let datas=snapshot.val()
-  if(snapshot.val()){
- setData(Object.entries(datas)) 
- }
-});
-onValue(ref(db,"/notify"),(snapshot)=>{
-  if(snapshot.val()){
-    setNotify(snapshot.val())
-  }
-})
+  const initialref=ref(db,"/table");
+  onValue(initialref, (snapshot) => {
+    let datas=snapshot.val()
+    if(snapshot.val()){
+      setData(Object.entries(datas))
+    }
+  });
+  onValue(ref(db,"/notify"),(snapshot)=>{
+    if(snapshot.val()){
+      setNotify(snapshot.val())
+    }
+  })
+  const starCountRef = ref(db, 'todo/');
+  onValue(starCountRef, (snapshot) => {
+    let data=snapshot.val()
+    if(snapshot.val())
 
-
-const starCountRef = ref(db, 'todo/');
-onValue(starCountRef, (snapshot) => {
-  let data=snapshot.val()
-  if(snapshot.val())
-    
-  setTablesData(Object.entries(data));
-})
-
- const starCountRefProd = ref(db, 'product/');
+    setTablesData(Object.entries(data));
+  })
+  const starCountRefProd = ref(db, 'product/');
   onValue(starCountRefProd, (snapshot) => {
     if(snapshot.val()){
         setProducts (Object.entries(snapshot.val()))
     }
- 
-
-})
- 
+  })
 },[])
 
-
-
- useEffect(()=>{
-
+useEffect(()=>{
    if(notify.description ){
     toast({
       title: notify.title,
@@ -82,32 +74,32 @@ onValue(starCountRef, (snapshot) => {
       isClosable: true,
     })
     let audioTag=document.getElementById(notify.title.split(" ")[1]);
-  audioTag.currentTime=0;
-  audioTag.play()
+    audioTag.currentTime=0;
+    audioTag.play()
    }
-
-  
  },[notify.change])
+
+const cafeData = {
+  numberOfPeople:numberOfPeople,
+  tablesData:tablesData
+}
+
   return (
-
-    <>
-    
-   <Router>
-   <Navbar tablesData={tablesData} numberOfPeople={numberOfPeople} />
-   <audio id="удален" src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/pause.wav" />
-   <audio id="принят" src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3" />
-   <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
-   <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
-    {/* <SpeechFeature/> */}
-<Routes>
-<Route exact path="/" element={<Tables numberOfPeople={numberOfPeople} setNumberOfPeople={(e)=>setNumberOfPeople(e)} notify={notify} tablesData={tablesData} />} />
-<Route path="/products"  element={<Products products={products} />}  /> 
-<Route path="/details"  element={<Details tablesData={tablesData} statuses={statuses} data={data} />}  /> 
-<Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  /> 
-</Routes>
-
-</Router>
-    </>
+    <MyContext.Provider value={cafeData}>
+      <Router>
+        <Navbar/>
+        <audio id="удален" src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/pause.wav" />
+        <audio id="принят" src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3" />
+        <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
+        <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
+        <Routes>
+          <Route exact path="/" element={<Tables numberOfPeople={numberOfPeople} setNumberOfPeople={(e)=>setNumberOfPeople(e)} notify={notify} tablesData={tablesData} />} />
+          <Route path="/products"  element={<Products products={products} />}  />
+          <Route path="/details"  element={<Details tablesData={tablesData} statuses={statuses} data={data} />}  />
+          <Route path="/order/:tableNumber/:numberOfPeople/:tableId"    element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  />
+        </Routes>
+      </Router>
+    </MyContext.Provider>
   );
 }
 

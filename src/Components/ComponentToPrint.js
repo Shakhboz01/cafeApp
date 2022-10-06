@@ -21,13 +21,13 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
 
   return(
     <Table  style={{tableLayout:"auto"}}  width='377px'   color='black' fontWeight="semibold"  overflow="hidden" fontSize="lg"   ref={ref} >
-              
+
     <TableCaption fontSize='xl' color='black' m='0' fontWeight='bold'>Спасибо что выбрали нас!</TableCaption>
     <TableCaption fontSize='xl' color='black'm='0' fontWeight='bold'>90 195 99 92</TableCaption>
 
 <Thead fontSize='28px' color='black' >
 <Tr    fontWeight='bold'  border="2px solid black"  >
-<Th width='40%' fontSize='38px' colSpan={3} textAlign='center' color='black' border="2px solid">ANOR CAFE</Th>
+<Th width='40%' fontSize='38px' colSpan={3} textAlign='center' color='black' border="2px solid">Sizning cafe</Th>
 </Tr>
 <Tr   fontWeight='bold' color='black' border="2px solid black"  >
 <Th  border="2px solid" color='black'>Имя</Th>
@@ -50,7 +50,7 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
 <Td border="2px solid" >Стол:{props.tableNumber}</Td>
 <Td  >Услуга:</Td>
  <Td textAlign='right'   > 0 сум </Td>
- 
+
 </Tr>
 <Tr  >
   {/* <Td>Стол {tableNumber}</Td> */}
@@ -59,7 +59,7 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
 </Tr>
 </Tbody>
 
-</Table> 
+</Table>
   )
 })
 
@@ -90,7 +90,7 @@ function BasicUsage({setTotalPrice,ordersData,totalPrice,tableNumber,children}) 
     return (
       <>
         <Button onClick={onOpen}>{children}</Button>
-  
+
         <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
           <ModalContent>
@@ -101,18 +101,18 @@ function BasicUsage({setTotalPrice,ordersData,totalPrice,tableNumber,children}) 
       /> </ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              
+
             <ComponentToPrint ref={componentRef} tableNumber={tableNumber} totalPrice={totalPrice} ordersData={ordersData} />
 
-            
+
 
             </ModalBody>
-  
+
             <ModalFooter>
               <Button colorScheme='red' mr={3} onClick={onClose}>
                 Закрыть
               </Button>
-              
+
             </ModalFooter>
           </ModalContent>
         </Modal>

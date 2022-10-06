@@ -34,10 +34,10 @@ justify-content:center;
 position:relative;
 `
 const Contain=styled.div`
-height:150px; 
+height:150px;
 display:flex;
 align-items:center;
-justify-content:center; 
+justify-content:center;
 background:${prop=>{
     switch (prop.status) {
         case 'empty':
@@ -50,7 +50,7 @@ background:${prop=>{
             return 'red'
         default:
             return 'green'
-            
+
     }
 }}
 
@@ -72,7 +72,7 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
             status:"active",
              id,
              start:today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+" / "+today.getHours() + ":" + today.getMinutes(),
-            
+
         });
         update(ref(db,'todo/'+orderId),{
           status:'full'
@@ -81,7 +81,7 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
     change:!notify.change,
     title:"Новый стол",
     description:`Номер: ${tableNumber} .Количество людей: ${numberOfPeople},`,
-    status:"info"   
+    status:"info"
   })
     navigate("/order/"+tableNumber+"/"+numberOfPeople+"/"+orderId)
     }
@@ -89,7 +89,7 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
   return (
     <div style={{backgroundColor:"black"}} >
     <Button colorScheme='red' onClick={onOpen}>
-{children}
+    {children}
     </Button>
 
     <AlertDialog
@@ -128,7 +128,7 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
 
 //**style */
 
-const Tables = ({tablesData,numberOfPeople,notify,setNumberOfPeople}) => {
+const Tables = ({tablesData, numberOfPeople, notify, setNumberOfPeople}) => {
     const position=['empty','booked','full']
     let id=uuidv4()
     const db = getDatabase();
@@ -156,12 +156,12 @@ const Tables = ({tablesData,numberOfPeople,notify,setNumberOfPeople}) => {
       setTableNumber(null)
       setShow(false)
        }
-       
+
        else  {
         alert("Уже есть стол с таким номером")
       }
-      
-        
+
+
     }
 
 
@@ -178,9 +178,9 @@ const setRow=(item)=>{
 }
 const updateData=(e,item)=>{
     e.preventDefault()
-  
+
     update(ref(db,'todo/'+item[1].id),{
-        title,tableNumber    
+        title,tableNumber
 })
 setSpecifyRow("")
 }
@@ -188,13 +188,13 @@ setSpecifyRow("")
 
 
  //updateStatus
- 
+
 
 const changeStatus=(prop,item)=>{
     if(prop==position[1]){
         setStatus(position[1]);
         update(ref(db,'todo/'+item[1].id),{
-            status:position[1]    
+            status:position[1]
     })
      }
     else if(prop==position[2]){
@@ -223,13 +223,13 @@ let newArray=[]
 useEffect(()=>{
 if(tablesData){
   for (var i=0;i<tablesData.length;i++){
-   array.push( tablesData[i][1].tableNumber) 
+   array.push( tablesData[i][1].tableNumber)
   }
 }
 newArray.push(array.sort((a,b)=>a-b))
 },[])
       return (
-    
+
         <div style={{ background:"black"}} >
           <Button m="70px 10px 10px 10px " onClick={()=>setShow(!show)} >{show?"Закрыть":"Добавить стол"}</Button>
           {show&&(
@@ -239,8 +239,8 @@ newArray.push(array.sort((a,b)=>a-b))
             <Button colorScheme='blue' type='submit' >Добавить</Button>
           </form>
           )}
-          
-          
+
+
 <Container>
 
 
@@ -250,7 +250,7 @@ newArray.push(array.sort((a,b)=>a-b))
 
             <Table position='absolute' >
                <h1 style={{color:"white",fontWeight:"bold"}} > {item[1].tableNumber}</h1>
-               
+
                {item[1].title&&(
                  <h2  style={{margin:"0 8px",color:"white"}} >{item[1].title}</h2>
                )}
@@ -282,7 +282,7 @@ newArray.push(array.sort((a,b)=>a-b))
 
   </MenuList>
 </Menu>
-            
+
 
             {specifyRow==item[1].id &&(
                  <form onSubmit={(e)=>updateData(e,item)}  >
@@ -298,7 +298,7 @@ newArray.push(array.sort((a,b)=>a-b))
   </Container>
         </div>
       )
-    
+
 
 }
 export default Tables

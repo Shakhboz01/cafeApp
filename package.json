@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^1.8.8",
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
     "@headlessui/react": "^1.6.1",
     "@heroicons/react": "^1.0.6",
     "@testing-library/jest-dom": "^5.16.4",
