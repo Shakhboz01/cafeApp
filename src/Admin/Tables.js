@@ -1,6 +1,6 @@
 
 
-import React,{useState} from 'react'
+import React,{useContext, useState} from 'react'
 import { getDatabase,remove, ref, set, update } from "firebase/database";
 import {AiFillMinusSquare} from 'react-icons/ai'
 import { BsPlusSquareFill} from 'react-icons/bs'
@@ -17,9 +17,11 @@ import {
     AlertDialogContent,
     AlertDialogOverlay,
     useDisclosure,
-    Input
+    Input,
+    Select
   } from '@chakra-ui/react'
 import { useEffect } from 'react';
+import { MyContext } from '../App';
 
 //style
 const Container=styled.div`
@@ -56,7 +58,7 @@ background:${prop=>{
 
 `
 
-const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,children})=>{
+const Alert=({orderId,notify, numberOfPeople, setNumberOfPeople,tableNumber,children})=>{
     const db=getDatabase();
     let id=uuidv4()
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -66,17 +68,16 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
 
 
     const createTable=()=>{
-        set(ref(db, 'table/'+tableNumber+'/orders'), {
-             tableNumber,
+        set(ref(db, 'table/'+tableNumber), {
+            tableNumber,
             numberOfPeople,
             status:"active",
-             id,
-             start:today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+" / "+today.getHours() + ":" + today.getMinutes(),
-
+            id,
+            start:today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+" / "+today.getHours() + ":" + today.getMinutes(),
         });
         update(ref(db,'todo/'+orderId),{
           status:'full'
-  })
+        })
   set(ref(db,"/notify"),{
     change:!notify.change,
     title:"Новый стол",
@@ -100,7 +101,7 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-          Укажите количество людей
+            Укажите количество людей
           </AlertDialogHeader>
 
           <AlertDialogBody display='flex' alignItems='center' >
@@ -122,20 +123,23 @@ const Alert=({orderId,notify,numberOfPeople,setNumberOfPeople,tableNumber,childr
     </AlertDialog>
   </div>
   );
-
 }
 
 
 //**style */
 
-const Tables = ({tablesData, numberOfPeople, notify, setNumberOfPeople}) => {
-    const position=['empty','booked','full']
-    let id=uuidv4()
-    const db = getDatabase();
-     const [specifyRow,setSpecifyRow]=useState("")
-    const [title,setTitle]=useState("")
-    const [tableNumber,setTableNumber]=useState(null)
-    const [status,setStatus]=useState(position[0]);
+const Tables = () => {
+  const values = useContext(MyContext);
+  const {typeOfTables, tablesData, numberOfPeople, notify, setNumberOfPeople} = values;
+  const position= ['empty','booked','full']
+  let id=uuidv4()
+  const db = getDatabase();
+  const [specifyRow, setSpecifyRow]=useState("")
+  const [title, setTitle]=useState("")
+  const [tableNumber, setTableNumber]=useState(null)
+  const [tableType, setTableType]=useState('')
+  const [updatingTable, setUpdatingTable] = useState(false)
+  const [show,setShow]=useState(false)
 
 
 //get
@@ -143,25 +147,20 @@ const Tables = ({tablesData, numberOfPeople, notify, setNumberOfPeople}) => {
 
 
 //create
-    const handleSubmit=(e)=>{
+    const createNewTable=(e)=>{
       e.preventDefault()
-       if( !tablesData || tablesData.filter(item=>item[1].tableNumber==tableNumber).length==0){
+       if( !tablesData || tablesData.filter(item => item[1].tableNumber==tableNumber).length==0){
         set(ref(db, 'todo/'+id), {
-          title,
-           tableNumber,
-           status:position[0],
-          id,
+          title, tableNumber, tableType, id,
+          status:position[0]
       });
       setTitle("")
       setTableNumber(null)
       setShow(false)
-       }
-
-       else  {
+      }
+      else  {
         alert("Уже есть стол с таким номером")
       }
-
-
     }
 
 
@@ -175,14 +174,21 @@ const setRow=(item)=>{
     setSpecifyRow(item[1].id)
     setTitle(item[1].title)
     setTableNumber(item[1].tableNumber)
+    setTableType(item[1].tableType)
+    setUpdatingTable(true);
+    setShow(true);
+    window.scrollTo(0,0);
 }
-const updateData=(e,item)=>{
-    e.preventDefault()
+const updateData=(e)=>{
+  e.preventDefault()
 
-    update(ref(db,'todo/'+item[1].id),{
-        title,tableNumber
-})
-setSpecifyRow("")
+  update(ref(db,'todo/'+ specifyRow),{
+    title, tableNumber, tableType
+  })
+  setSpecifyRow(""); setTableType(typeOfTables[0]);
+  setTableNumber(null); setTitle('');
+  setShow(false);
+  setUpdatingTable(false);
 }
  /* update*/
 
@@ -192,21 +198,16 @@ setSpecifyRow("")
 
 const changeStatus=(prop,item)=>{
     if(prop==position[1]){
-        setStatus(position[1]);
         update(ref(db,'todo/'+item[1].id),{
             status:position[1]
     })
-     }
+    }
     else if(prop==position[2]){
-        setStatus(position[2]);
         update(ref(db,'todo/'+item[1].id),{
             status:position[2]
     })
-
-
 }
 else if(prop==position[0]){
-    setStatus(position[0]);
     update(ref(db,'todo/'+item[1].id),{
         status:position[0]
 })
@@ -217,26 +218,21 @@ const redirect=(item)=>{
   navigate("/order/"+item[1].tableNumber+"/"+numberOfPeople+"/"+item[0])
 }
 
-const [show,setShow]=useState(false)
-let array=[]
-let newArray=[]
-useEffect(()=>{
-if(tablesData){
-  for (var i=0;i<tablesData.length;i++){
-   array.push( tablesData[i][1].tableNumber)
-  }
-}
-newArray.push(array.sort((a,b)=>a-b))
-},[])
+
       return (
 
         <div style={{ background:"black"}} >
-          <Button m="70px 10px 10px 10px " onClick={()=>setShow(!show)} >{show?"Закрыть":"Добавить стол"}</Button>
+          <Button m="70px 10px 10px 10px" onClick={()=> setShow(!show)} >{show?"-":"+"}</Button>
           {show&&(
-            <form style={{color:"white",display:"flex",flexDirection:"column"}} onSubmit={(e)=>handleSubmit(e)}  >
-            <Input required placeholder='Номер стола' onChange={(e)=>setTableNumber(e.target.value)} defaultValue={tableNumber} name="number" type='number'/>
-            <Input   placeholder='Название стола(не обязательно)' onChange={(e)=>setTitle(e.target.value)} defaultValue={title} type='text' name='title'/>
-            <Button colorScheme='blue' type='submit' >Добавить</Button>
+            <form style={{color:"white",display:"flex",flexDirection:"column"}} onSubmit={(e)=> updatingTable ? updateData(e) : createNewTable(e) }  >
+            <Input defaultValue = {tableNumber} required placeholder='Номер стола' onChange={(e)=>setTableNumber(e.target.value)} name="number" type='number'/>
+            <Input placeholder='Название стола(не обязательно)' defaultValue={title} onChange={(e)=>setTitle(e.target.value)} type='text' name='title'/>
+            <Select defaultValue={tableType} onChange = {(e) => setTableType(e.target.value)} placeholder='Тип'>
+              {typeOfTables.map((item,ind) => (
+                <option key = {ind} value = {item}>{item}</option>
+              ))}
+            </Select>
+            <Button colorScheme='blue' type='submit' > {updatingTable ? 'Редактировать' : 'Добавить'}</Button>
           </form>
           )}
 
@@ -282,15 +278,6 @@ newArray.push(array.sort((a,b)=>a-b))
 
   </MenuList>
 </Menu>
-
-
-            {specifyRow==item[1].id &&(
-                 <form onSubmit={(e)=>updateData(e,item)}  >
-                   <input defaultValue={title} required onChange={(e)=>setTitle(e.target.value)} type='text' name='title'/>
-                   <input  defaultValue={tableNumber} required onChange={(e)=>setTableNumber(e.target.value)}  type='number'/>
-                   <button type='submit' >Submit</button>
-                 </form>
-            )}
             </Table>
         </Contain>
     )

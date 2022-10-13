@@ -1,6 +1,6 @@
 import React, { useEffect,useRef, useState } from 'react'
 import {  useLocation } from 'react-router-dom'
-import { getDatabase,push,onValue,remove, ref, set, update } from "firebase/database";
+import { getDatabase, push, onValue,remove, ref, set, update } from "firebase/database";
 import ReactToPrint from 'react-to-print';
 import {AiFillDelete, AiFillEdit, AiOutlineArrowRight} from 'react-icons/ai'
 import  styled from 'styled-components'
@@ -23,7 +23,7 @@ import "./orderStyle.css";
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogContent,
-    
+
     Input,
     Table,
     Thead,
@@ -132,7 +132,7 @@ const setprice=(e)=>{
 
         {/* <AlertDialog
           isOpen={open}
-          
+
           onClose={()=>setOpen(false)}
           background='rgb(26 32 44)'
 
@@ -161,7 +161,7 @@ const setprice=(e)=>{
               <AiOutlineArrowRight/>
                 </Button>
               </Box>
-              
+
               {/* <AlertDialogFooter>
                 <Button ref={cancelRef} background='red.500' color='white' onClick={()=>setOpen(false)}>
                   Отмена
@@ -185,7 +185,7 @@ const setprice=(e)=>{
     const [openMenu,setOpenMenu] = useState(true)
     const [open,setOpen]=useState(false);
     const [types,setTypes]=useState("Все");
-     
+
     const [displayIndex,setDisplayIndex]=useState(null)
     const [search,setSearch]=useState("")
     const changeDisplay=(index)=>{
@@ -194,7 +194,7 @@ setDisplayIndex(index)
 
     }
 
- 
+
     return (
       <Container >
         {/* <Box display='flex' alignItems='center'pt='35px' justifyContent='space-between' > */}
@@ -204,7 +204,7 @@ setDisplayIndex(index)
         <Modal scrollBehavior='inside' isOpen={openMenu} onClose={()=>setOpenMenu(false)}>
           <ModalOverlay  colorScheme='red' />
           <ModalContent background='rgb(10 25 41)'  >
-            <ModalHeader color='whatsapp.100' > 
+            <ModalHeader color='whatsapp.100' >
             <Box    display='flex' alignItems='center' justifyContent='space-evenly' >
                   <Input maxWidth='200px' onChange={(e)=>setSearch(e.target.value)} value={search} placeholder='Найти' />
                   <Select variant="outline" bg="wheat" color='black' onChange={(e)=>setTypes(e.target.value)} maxWidth='100px' size='xm'  placeholder='Тип' >
@@ -220,7 +220,7 @@ setDisplayIndex(index)
             </ModalHeader>
             <ModalCloseButton />
             <ModalBody  color='whatsapp.100' >
-        
+
                 <Container>
 
               {data.sort((a,b)=>a[1].popular===b[1].popular?0 : a[1].popular? -1 : 1).filter(filt=>filt[1].name.toLowerCase().includes(search.toLowerCase()))
@@ -243,7 +243,7 @@ setDisplayIndex(index)
             </div>   )}
                   </Box>
 )})}
-      
+
 
               </Container>
             </ModalBody>
@@ -256,7 +256,7 @@ setDisplayIndex(index)
           </ModalContent>
         </Modal>
       </Container>
- 
+
     )
   }
 
@@ -270,33 +270,30 @@ const Orders = ({setOpen,tablesData,specialProducts,checkData,setCheckData,notif
     const [totalPrice,setTotalPrice]=useState(0);
     const db=getDatabase();
 
-    const starCountRefs = ref(db, "table/"+location[2]);
+    const starCountRefs = ref(db, `table/${location[3]}/${location[2]}`);
   const navigate=useNavigate()
     useEffect(()=>{
+
       // const starCountRef = ref(db, 'product/');
       setOpen(true)
 
       //getAvailableProducts
-    setObject({
-        id:location[2],
-        tableNumber:location[3],
-    })
+
     onValue(starCountRefs, (snapshot) => {
       let datas=snapshot.val()
       if(snapshot.val()){
-         setOrdersData( Object.entries(datas))
-    }
-  });   
+         setOrdersData(Object.entries(datas))
+      }
+  });
 setOpen(false)
     },[])
 
-    useEffect(()=>{
- let currentTableNumber = tablesData.find(num => num[1].tableNumber == location[2] )
- if(currentTableNumber[1].status =='empty' ){
-  navigate("/")
- }
-
-    },[tablesData])
+  // useEffect(()=>{
+  //   let currentTableNumber = tablesData && tablesData.find(num => num[1].tableNumber === location[2] )
+  //   if(tablesData && currentTableNumber[1].status =='empty' ){
+  //     navigate("/")
+  //   }
+  // },[tablesData])
   //   useEffect(()=>{
   //     let navigation = true
   //     if(notify.title==="Заказ завершен" && navigation == true ){
@@ -305,7 +302,7 @@ setOpen(false)
 
 
   //   navigation = false
-  
+
   //   },[notify.change])
 
 const statusChange=(item)=>{
@@ -424,7 +421,7 @@ const handleChange=(item)=>{
       </Th>
         <Th position='fixed' top='52px' right='15px' >          <BasicUsage tableNumber={window.location.pathname.split("/")[2]} setTotalPrice={(e)=>setTotalPrice(e)} totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >  <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} /></BasicUsage> </Th>
       </Tr>
-      
+
     </Tfoot>
   </Table>
 </TableContainer>

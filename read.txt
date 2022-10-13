@@ -6,3 +6,10 @@ const cafeData = {
   notify: notify,
   tablesData: tablesData
 }
+
+
+
+
+
+
+adding new table

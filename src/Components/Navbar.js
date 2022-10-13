@@ -35,6 +35,11 @@ const Navbar = () => {
                 <div className="nav-link" style={{cursor:'pointer'}} >Домой <span className="sr-only">(current)</span></div>
               </Link>
             </li>
+            <li className="nav-item active">
+              <Link to='/tables' >
+                <div className="nav-link" style={{cursor:'pointer'}} >Столы <span className="sr-only">(current)</span></div>
+              </Link>
+            </li>
             <li className="nav-item">
               <Link to="/products" >
                 <div className="nav-link" >Продукты</div>
