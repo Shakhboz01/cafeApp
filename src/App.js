@@ -38,6 +38,7 @@ const callToast=()=>{
     status: "success",
     duration: 12000,
     isClosable: true,
+    variant: 'top-accent'
   })
 }
 
@@ -63,25 +64,20 @@ useEffect(()=>{
   })
   const starCountRef = ref(db, 'todo/');
   const ordersRef = ref(db, 'table/');
-  onValue(starCountRef, (snapshot) => {
+  onValue(starCountRef, async(snapshot) => {
     let data = snapshot.val()
-    if(snapshot.val())
-      setTablesData(Object.entries(data));
-    })
+    await data && setTablesData(Object.entries(data));
+  })
 
-  onValue(ordersRef, (snapshot) => {
-    let orderData = snapshot.val()
-    if(snapshot.val()){
-      setOrdersData(Object.entries(orderData));
-      console.log('orders',orderData)
-    }
+  onValue(ordersRef, async(snapshot) => {
+    let orderData = snapshot.val();
+    await orderData && setOrdersData(Object.entries(orderData));
+    console.log("ordersData",Object.entries(orderData))
   })
 
   const starCountRefProd = ref(db, 'product/');
   onValue(starCountRefProd, (snapshot) => {
-    if(snapshot.val()){
-        setProducts (Object.entries(snapshot.val()))
-    }
+    snapshot.val() && setProducts(Object.entries(snapshot.val()))
   })
 },[])
 
@@ -92,6 +88,8 @@ useEffect(()=>{
       description: notify.description,
       status: notify.status,
       duration: 4000,
+      variant: 'top-accent',
+      position: 'top-right',
       isClosable: true,
     })
     let audioTag=document.getElementById(notify.title.split(" ")[1]);
@@ -114,6 +112,11 @@ useEffect(()=>{
   tableStatuses,
   currentDate:currentDate(),
   data,
+  checkData:data,
+  setCheckData:(e) => setData(e),
+  statuses,
+  ordersData,
+  setOrdersData: (e) => setOrdersData(e),
 }
 
   return (
@@ -128,7 +131,7 @@ useEffect(()=>{
           <Route exact path="/" element={<Tables/>} />
           <Route path="/products"  element={<Products/>}  />
           <Route path="/details"  element={<Details tablesData={tablesData} statuses={statuses} data={data} />}  />
-          <Route path="/order/:tableNumber/:numberOfPeople/:tableId/:tableType" element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  />
+          <Route path="/order/:tableId/:tableType" element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  />
           <Route path="/products/:productId" element={<SHowProduct/>}  />
           <Route path="/tables" element={<NewTable/>}  />
         </Routes>

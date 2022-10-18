@@ -91,6 +91,9 @@ const Products = () => {
     const [specifyRow, setSpecifyRow]=useState('');
     const [isUpdating, setIsUpdating]=useState(false)
     const [show, setShow]=useState(false)
+    const [currentTypeOfFood, setCurrentTypeOfFood]=useState(typeOfFood[typeOfFood.length-1])
+    const [searchName, setSearchName]=useState('')
+    const [sortByLessProdsLeft, setSortByLessProdsLeft]=useState(false)
     //search
 
     let id = uuidv4();

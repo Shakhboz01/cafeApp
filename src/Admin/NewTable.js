@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Flex, Input, Spacer, useDisclosure } from '@chakra-ui/react'
+import { Button, ButtonGroup, Flex, Input, Spacer, Tooltip, useDisclosure } from '@chakra-ui/react'
 import React, { useContext, useState } from 'react'
 import { BsPeopleFill, BsPlusSquareFill } from 'react-icons/bs'
 import { MdPlace } from 'react-icons/md'
@@ -94,7 +94,6 @@ const NewTable = () => {
     const {typeOfTables, db, tableStatuses, currentDate, notify, tablesData} = values;
 
     const [searchName, setSearchName] = useState('');
-    const [sortByLessProdsLeft, setSortByLessProdsLeft] = useState(false);
     const [currentTypeOfFood, setCurrentTypeOfFood] = useState(typeOfTables[typeOfTables.length - 1])
     const [specifyRow, setSpecifyRow]=useState("")
     const [title, setTitle]=useState("")
@@ -115,8 +114,8 @@ const NewTable = () => {
     }
 
     const createTable=(typeOfTable, numberOfTable, orderId)=>{
-        set(ref(db, `table/${typeOfTable}/${numberOfTable}`), {
-            tableNumber,
+        set(ref(db, `table/${typeOfTable}/${numberOfTable}/info`), {
+            numberOfTable,
             numberOfPeople,
             status: "active",
             start:currentDate,
@@ -132,10 +131,10 @@ const NewTable = () => {
         set(ref(db,"/notify"),{
             change:!notify.change,
             title:"Новый стол",
-            description:`Номер: ${tableNumber} .Количество людей: ${numberOfPeople},`,
+            description:`Номер: ${numberOfTable} .Количество людей: ${numberOfPeople},`,
             status:"info"
         })
-        navigate("/order/" + tableNumber + "/" + numberOfPeople + "/" + orderId + '/' + typeOfTable)
+        navigate(`/order/${numberOfTable}/${typeOfTable}`)
     }
 
     const updateData=(e)=>{
@@ -169,9 +168,23 @@ const NewTable = () => {
     const redirect=(item)=>{
         navigate("/order/"+item[1].tableNumber+"/"+2+"/"+item[0])
     }
+
+    const closedTable = (item) => {
+      remove(ref(db,`table/${item[1].tableType}/${item[1].tableNumber}`))
+      update(ref(db,"todo/"+item[0]),{
+        status:"empty"
+      })
+      set(ref(db,"/notify"),{
+        change:!notify.change,
+        description:`Стол ${item[1].tableNumber}  был закрыт `,
+        status:"warning",
+        title:"Заказ завершен"
+      })
+    }
+
     const navigateToOrders = (item) => {
         if(item[1].status === tableStatuses[2]){
-            navigate("/order/" + item[1].tableNumber + "/" + item[1].numberOfPeople + "/" + item[1].id + '/' + item[1].tableType)
+            navigate(`/order/${item[1].tableNumber}/${item[1].tableType}`)
         }
     }
   return (
@@ -211,15 +224,23 @@ const NewTable = () => {
                 <TableHeader>
                     <Dropdown>
                         {/* <IoIosArrowDropdownCircle/> */}
+                      {item[1].status === tableStatuses[0] && (
                         <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" onClick={()=>{setRow(item)}} >Редактировать</a>
-                                <a class="dropdown-item" >Занятать</a>
-                                <a class="dropdown-item" >Удалить</a>
-                            </div>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <span class="dropdown-item" onClick={()=>{setRow(item)}}>
+                                        Редактировать
+                                    </span>
+                                    <span class="dropdown-item">
+                                        Занятать
+                                    </span>
+                                    <span class="dropdown-item">
+                                        Удалить
+                                    </span>
+                                </div>
                         </div>
+                      )}
                     </Dropdown>
                     <InputOrPrint>
                         {item[1].status !== tableStatuses[1] && (
@@ -243,8 +264,10 @@ const NewTable = () => {
                                     <AiOutlineArrowRight/>
                                 </Button>
                             ):(
-                                <Button colorScheme='red'>
-                                    <BiLogOut/>
+                                <Button onClick={() => closedTable(item)} colorScheme='red'>
+                                    <Tooltip hasArrow label="Закрать стол" >
+                                      <BiLogOut/>
+                                    </Tooltip>
                                 </Button>
                             )
                         )}
