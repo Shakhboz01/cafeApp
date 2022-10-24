@@ -31,10 +31,11 @@ import "./orderStyle.css";
     Tr,Th,    Td,
     Select,
     TableContainer,
+    TableCaption,
   } from '@chakra-ui/react'
   import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router-dom';
-import BasicUsage from '../Components/ComponentToPrint';
+import ComponentToPrint from '../Components/ComponentToPrint';
 import { MyContext } from '../App';
 
 
@@ -66,7 +67,7 @@ position:relative;
 overflow:auto;
 `
 const ProdsHeader = styled.div`
-z-index:2;
+z-index:1.5;
 align-self:center;
 `
 const ProdsFooter = styled.div`
@@ -74,7 +75,7 @@ height:100%;
 overflow:auto;
 `
 
-function AlertDialogExample({item, setSearch, notify, currentPath, db}) {
+function AlertDialogExample({item, tablesData, tableInfo, currentOrderData, setSearch, notify, currentPath, db}) {
   //add order
   const [num,setNum]=useState(1);
   const [desc,setDesc]=useState("");
@@ -94,6 +95,12 @@ function AlertDialogExample({item, setSearch, notify, currentPath, db}) {
         total:item[1].price*num,
         desc
     });
+    console.log('currentOrderData',currentOrderData)
+    update(ref(db, `todo/${tableInfo[0]}`), {
+      totalPrice: tableInfo[1].totalPrice + item[1].price*num
+    })
+
+    console.log(tableInfo[1].totalPrice,'tableInfo[1].totalPrice')
     set(ref(db,"/notify"),{
       change:!notify.change,
       description:`${num} ${item[1].name} / ${currentPath.tableNumber}  cтол `,
@@ -212,16 +219,16 @@ function AlertDialogExample({item, setSearch, notify, currentPath, db}) {
 
 
 const Orders = () => {
+  var visitCount = 0
   const values = useContext(MyContext);
-  const {ordersData, setOrdersData, typeOfFood,tablesData, db, products, setCheckData, checkData, statuses, notify} = values
+  const {ordersData, setOrdersData, typeOfFood, setNotify, printRef, tablesData, db, products, setCheckData, checkData, statuses, notify} = values
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [currentOrderData,setCurrentOrderData] =useState([]);
-  const [totalPrice,setTotalPrice]=useState(0);
   const singleRef=useRef()
   const [single,setSingle]=useState({})
+  const [allowToVisit, setAllowToVisit] = useState(true)
   const [currentPath, setCurrentPath] = useState({})
-  const [tableId,setTableId] = useState('')
-  const componentRef = useRef();
+  const [tableInfo, setTableInfo] = useState([[],[{tableNumber:0}]])
   var windowPath = window.location.pathname.split('/')
   const navigate=useNavigate()
 
@@ -230,7 +237,7 @@ const Orders = () => {
       var id = tablesData.find(item => {
         return item[1].tableNumber == windowPath[2] && item[1].tableType === windowPath[3]
       })
-      setTableId(id[0])
+      setTableInfo(id)
     }
   },[tablesData])
 
@@ -240,31 +247,65 @@ const Orders = () => {
       tableNumber: windowPath[2]
     })
     //get offline
-    // if(ordersData){
-    //   let firstStep = ordersData.find(item=> {
-    //     return item[0] === windowPath[3]
-    //   })
-    //   let secondStep = Object.entries(firstStep[1]).find(it => it[0] === windowPath[2])
-    //   let lastStep = Object.entries(secondStep[1])
-    //   setCurrentOrderData(lastStep)
-    //   console.log('lastspter',lastStep)
-    //   console.log("Got from ordersData")
-    // }
-    // else{
+    if(ordersData.length !==0){
+      console.log("ORDER is true", ordersData)
+      var firstStep = ordersData.find(item => item[0] === windowPath[3])
+      if(firstStep){
+        firstStep = firstStep[1]
+        var secondStep = Object.values(firstStep)
+        var lastStep = Object.entries(secondStep[0])
+        setCurrentOrderData(lastStep)
+      }
+    }
+    else{
       const starCountRefs = ref(db, `table/${windowPath[3]}/${windowPath[2]}`);
 
       onValue(starCountRefs, (snapshot) => {
         let datas = snapshot.val()
         if(datas){
           setCurrentOrderData(Object.entries(datas))
+          console.log('CurrentOrderData',Object.entries(datas))
         }
+      console.log("Didnot from ordersData")
       });
-    // }
+    }
+    visitCount++
+    setAllowToVisit(false)
+    setTimeout(() => {
+      setAllowToVisit(true)
+    }, 2000);
   },[])
 
+  useEffect(()=>{
+    if(ordersData.length !== 0){
+      var firstStep = ordersData.find(item => item[0] === windowPath[3])
+      if(firstStep){
+        console.log("FIRST step true",firstStep[1])
+
+        var secondStep = Object.entries(firstStep[1])
+        var secondStepIndex = secondStep.findIndex(item => item[0] === windowPath[2]);
+        console.log(secondStep,'secondStep');
+        if(secondStepIndex !== -1){
+          console.log(secondStepIndex,'secondStepIndex')
+          var lastStep = Object.entries(secondStep[secondStepIndex][1])
+          console.log(';aststep',lastStep)
+          setCurrentOrderData(lastStep)
+        }
+      }
+      else{
+        console.log("FIRST step false")
+      }
+    }
+  },[ordersData])
+
+  useEffect(()=>{
+    if(notify.status === 'warning' && notify.description.match(/\d+/)[0] === windowPath[2]){
+      navigate('/tables')
+    }
+  },[notify])
   const statusChange=(item)=>{
     var itemRef = ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}/${item[0]}`);
-    if(item[1].status==statuses[0]){
+    if(item[1].status == statuses[0]){
         update(itemRef,{
           status:statuses[1]
         })
@@ -283,6 +324,12 @@ const Orders = () => {
   const deleteRow=(item)=>{
 
     remove(ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}/${item[0]}`))
+
+    let quantity = Number(item[1].quantity.replace( /\D+/g, ''))
+
+    update(ref(db, `todo/${tableInfo[0]}`), {
+      totalPrice: (tableInfo[1].totalPrice - item[1].total)
+    })
     set(ref(db,"/notify"),{
       change:!notify.change,
       description:`${item[1].name} в ${currentPath.tableNumber} столе был удален!`,
@@ -294,10 +341,10 @@ const Orders = () => {
   const closedTable=()=>{
     try {
       remove(ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}`))
-      update(ref(db,"todo/"+tableId),{
+      update(ref(db,"todo/"+tableInfo[0]),{
         status:"empty"
       })
-      console.log('tableid',currentPath)
+      console.log('tableid', currentPath)
     } catch (error) {
       alert(error)
     }
@@ -305,11 +352,10 @@ const Orders = () => {
 
     set(ref(db,"/notify"),{
       change:!notify.change,
-      description:`Стол ${currentPath.tableNumber}  был закрыт `,
+      description:`Стол ${currentPath.tableNumber} был закрыт `,
       status:"warning",
       title:"Заказ завершен"
     })
-    navigate('/tables')
   }
 
   const handleChange=(item)=>{
@@ -325,16 +371,24 @@ const Orders = () => {
     })
   }
 
+  // useEffect(()=>{
+  //   callNavigationFromNavbar.tableNumber && navigate(`/tables`)
+  // },[callNavigationFromNavbar])
 // add product
   const [items, setItems]=useState()
-  const [types,setTypes]=useState("Все");
-  const [search,setSearch]=useState("")
+  const [types, setTypes]=useState("Все");
+  const [search, setSearch]=useState("")
 
   return (
-    <div style={{height:'100vh',fontWeight:"500",overflow:'hidden',background:"#181f34f5" ,fontSize:"larger"}}>
-      <Button onClick={() => closedTable()} colorScheme='red' marginTop='70px'>
-        Закрыть стол {currentPath.tableNumber}
-      </Button>
+    <div style = {{height:'100vh',fontWeight:"500",overflow:'hidden',background:"#181f34f5" ,fontSize:"larger"}}>
+      <div>
+        <Button colorScheme={'red'} marginTop='70px' onClick={()=> closedTable()}>
+        <ReactToPrint
+                trigger={() => <div>Закрыть стол {currentPath.tableNumber}</div> }
+                content={() => printRef.current}
+                />
+        </Button>
+      </div>
       <div>
         <OrdersAndProds>
           <Prods>
@@ -344,7 +398,7 @@ const Orders = () => {
                   <div class="input-group-prepend">
                       <span class="input-group-text" id="inputGroup-sizing-default">Найти</span>
                   </div>
-                  <input onChange={(e) => setSearch(e.target.value)} type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"/>
+                  <input onChange={(e) => setSearch(e.target.value)} type="text" class="form-control" value={search} aria-label="Default" aria-describedby="inputGroup-sizing-default"/>
                 </div>
                 <div class="btn-group btn-group" role="group" aria-label="...">
                     {typeOfFood.map((item, ind) => (
@@ -370,7 +424,7 @@ const Orders = () => {
                         </ImageContainer>
                         <h3 style={{flex:1, overflowWrap:"break-word" }} >{item[1].name}  </h3>
                         <div onClick={()=>setItems(item)}>
-                          <AlertDialogExample ordersData={ordersData} currentOrderData={currentOrderData} currentPath={currentPath} db={db} search={search} setSearch={(e)=>setSearch(e)} notify={notify} item={items}/>
+                          <AlertDialogExample tableInfo={tableInfo} tablesData={tablesData} ordersData={ordersData} currentOrderData={currentOrderData} currentPath={currentPath} db={db} search={search} setSearch={(e)=>setSearch(e)} notify={notify} item={items}/>
                         </div>
                       </>
                   </Box>
@@ -389,9 +443,10 @@ const Orders = () => {
                 </Tr>
               </Thead>
               <Tbody>
-                { currentOrderData && currentOrderData.filter((item,ind)=>ind !== currentOrderData.length-1).map(item=>(
+                {currentOrderData.length !== 0 && currentOrderData.filter((item,ind)=>ind !== currentOrderData.length-1)
+                                                     .map(item=>(
                   <Tr key={item[0]} >
-                    <Td>{item[1].name}  {item[1].desc&&( <i style={{textWrap:"wrap",color:"red",}} >({item[1].desc})</i>)  }  </Td>
+                    <Td>{item[1].name}  {item[1].desc && ( <i style={{textWrap:"wrap",color:"red",}} >({item[1].desc})</i>)  }  </Td>
                     <Td isNumeric>{item[1].quantity}</Td>
                     <Td>
                       <Box display='flex' alignItems='center'>
@@ -420,10 +475,11 @@ const Orders = () => {
                   <Th>
                     Cтол {currentPath.tableNumber}
                   </Th>
-                  <Th position='fixed' top='52px' right='15px' >
-                    <BasicUsage tableNumber={window.location.pathname.split("/")[2]} setTotalPrice={(e)=>setTotalPrice(e)} totalPrice={totalPrice} ordersData={ordersData} ref={componentRef} >
-                      <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}} />
-                    </BasicUsage>
+                  <Th position = 'fixed' top = '52px' right='15px' >
+                    <ReactToPrint
+                      trigger={() => <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}}/>}
+                      content={() => printRef.current}
+                    />
                   </Th>
                 </Tr>
               </Tfoot>
@@ -464,6 +520,15 @@ const Orders = () => {
                 </ModalFooter>
               </ModalContent>
           </Modal>
+        </div>
+        <div id='for_print' style={{display:'none'}}>
+          <ComponentToPrint
+            ref = {printRef}
+            totalPrice = {tableInfo[1].totalPrice}
+            ordersData = {currentOrderData}
+            tableNumber = {currentPath.tableNumber}
+            tableType = {currentPath.tableType}
+          />
         </div>
       </div>
     </div>

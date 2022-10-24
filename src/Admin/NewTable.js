@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Flex, Input, Spacer, Tooltip, useDisclosure } from '@chakra-ui/react'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { BsPeopleFill, BsPlusSquareFill } from 'react-icons/bs'
 import { MdPlace } from 'react-icons/md'
 import {FaMoneyBillWave} from 'react-icons/fa'
@@ -12,6 +12,8 @@ import { MyContext } from '../App'
 import AddTable from '../Components/AddTable'
 import { getDatabase,remove, ref, set, update } from "firebase/database";
 import { useNavigate } from 'react-router-dom'
+import ComponentToPrint from '../Components/ComponentToPrint'
+import ReactToPrint from 'react-to-print'
 
 const TableContainer = styled.div`
 display:flex;
@@ -64,7 +66,19 @@ place-items:center;
 
 const TableNumber =styled.div`
 flex:1;
-background:${prop=>prop.item[1].status === 'full' ? 'green' : 'black'};
+background:${prop=>{
+    switch (prop.item[1].status) {
+        case 'full':
+            return 'green'
+            break;
+        case 'booked':
+            return 'brown'
+            break;
+        default:
+            return 'black'
+            break;
+    }
+}};
 color:white;
 ${prop=>prop.item[1].status === 'full' && 'cursor: pointer;'}
 display:grid;
@@ -91,7 +105,7 @@ justify-content:space-between;
 `
 const NewTable = () => {
     const values = useContext(MyContext)
-    const {typeOfTables, db, tableStatuses, currentDate, notify, tablesData} = values;
+    const {typeOfTables, db, printRef, ordersData, tableStatuses, currentDate, notify, tablesData} = values;
 
     const [searchName, setSearchName] = useState('');
     const [currentTypeOfFood, setCurrentTypeOfFood] = useState(typeOfTables[typeOfTables.length - 1])
@@ -100,7 +114,14 @@ const NewTable = () => {
     const [tableNumber, setTableNumber]=useState(null)
     const [tableType, setTableType]=useState('')
     const [updatingTable, setUpdatingTable] = useState(false)
-    const [numberOfPeople, setNumberOfPeople] = useState(1)
+    const [numberOfPeople, setNumberOfPeople] = useState(1);
+    const [totalPriceAndNumberToPrint, setTotalPriceAndNumberToPrint] = useState({
+        ordersData:[],
+        tableNumber:0,
+        totalPrice:0
+    })
+    const [allowToPrint, setAllowToPrint] = useState(false)
+
     const { isOpen, onOpen, onClose } = useDisclosure()
 
     const navigate=useNavigate()
@@ -111,6 +132,20 @@ const NewTable = () => {
         setTableType(item[1].tableType)
         setUpdatingTable(true);
         onOpen();
+    }
+
+    const deleteTable = (item)=>{
+      remove(ref(db, 'todo/'+item[0]));
+    }
+    const bookTable = (item) => {
+        update(ref(db,'todo/'+item[0]), {
+            status: tableStatuses[1]
+        })
+    }
+    const cancelBooking = (item) => {
+        update(ref(db,'todo/'+item[0]), {
+            status: tableStatuses[0]
+        })
     }
 
     const createTable=(typeOfTable, numberOfTable, orderId)=>{
@@ -136,7 +171,9 @@ const NewTable = () => {
         })
         navigate(`/order/${numberOfTable}/${typeOfTable}`)
     }
-
+    // useEffect(()=>{
+    //     callNavigationFromNavbar.tableNumber && navigate(`/order/${callNavigationFromNavbar.tableNumber}/${callNavigationFromNavbar.tableType}`)
+    //   },[callNavigationFromNavbar])
     const updateData=(e)=>{
         e.preventDefault()
         update(ref(db,'todo/'+ specifyRow),{
@@ -168,7 +205,19 @@ const NewTable = () => {
     const redirect=(item)=>{
         navigate("/order/"+item[1].tableNumber+"/"+2+"/"+item[0])
     }
-
+    // const printTable = (item) => {
+    //     if(ordersData.length !== 0){
+    //         var firstStep = ordersData.find(item => item[0] === item[1].tableType)[1]
+    //         var secondStep = Object.values(firstStep)
+    //         var lastStep = Object.entries(secondStep[0])
+    //         setTotalPriceAndNumberToPrint({
+    //             totalPrice: item[1].totalPrice,
+    //             tableNumber: `${item[1].tableNumber}, ${item[1].tableType}`,
+    //             tableData: lastStep
+    //         });
+    //         setAllowToPrint(true)
+    //     }
+    // }
     const closedTable = (item) => {
       remove(ref(db,`table/${item[1].tableType}/${item[1].tableNumber}`))
       update(ref(db,"todo/"+item[0]),{
@@ -200,7 +249,6 @@ const NewTable = () => {
                 title={title} setTitle={(e)=>setTitle(e)} >
             Добавить стол
         </AddTable>
-
         <Spacer/>
         <div style={{width:'200px'}} class="input-group">
             <div class="input-group-prepend">
@@ -218,7 +266,7 @@ const NewTable = () => {
      <TableContainer>
         {tablesData && tablesData.filter(table => currentTypeOfFood == typeOfTables[typeOfTables.length-1] ? table : table[1].tableType === currentTypeOfFood)
                                  .filter(filt=>filt[1].tableNumber.toLowerCase().includes(searchName.toLowerCase()))
-                                 .sort((a,b)=>a[1].tableNumber-b[1].tableNumber)
+                                 .sort((a=>a[1].status === tableStatuses[2]))
                                  .map(item => (
             <Table>
                 <TableHeader>
@@ -229,14 +277,25 @@ const NewTable = () => {
                             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <span class="dropdown-item" onClick={()=>{setRow(item)}}>
+                                    <span style={{cursor:'pointer'}} class="dropdown-item" onClick={()=>{setRow(item)}}>
                                         Редактировать
                                     </span>
-                                    <span class="dropdown-item">
+                                    <span style={{cursor:'pointer'}} onClick={()=> bookTable(item)} class="dropdown-item">
                                         Занятать
                                     </span>
-                                    <span class="dropdown-item">
+                                    <span style={{cursor:'pointer'}} onClick={()=> deleteTable(item)} class="dropdown-item">
                                         Удалить
+                                    </span>
+                                </div>
+                        </div>
+                      )}
+                      {item[1].status === tableStatuses[1] && (
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <span style={{cursor:'pointer'}} onClick={()=> cancelBooking(item)} class="dropdown-item">
+                                        Отменить
                                     </span>
                                 </div>
                         </div>
@@ -251,15 +310,19 @@ const NewTable = () => {
                                     <BsPlusSquareFill style={{cursor:"pointer", fontSize:"30px"}} onClick={()=>setNumberOfPeople(prev => prev + 1)} />
                                 </div>
                             ) : (
-                                <Button colorScheme={'green'} >
-                                    <AiFillPrinter/>
-                                </Button>
+                                <div>
+                                    {/* onClick={() => printTable(item)} */}
+                                    {/* <ReactToPrint
+                                        trigger={() => <AiFillPrinter/>}
+                                        content={() => printRef.current}
+                                    /> */}
+                                </div>
                             )
                         )}
                     </InputOrPrint>
                     <CreateOrFinish>
-                        {item[1].status !== tableStatuses[1] && (
-                            item[1].status === tableStatuses[0] ? (
+
+                            {item[1].status === tableStatuses[0] || item[1].status === tableStatuses[1] ? (
                                 <Button onClick={() => createTable(item[1].tableType, item[1].tableNumber,item[1].id)} colorScheme='green'>
                                     <AiOutlineArrowRight/>
                                 </Button>
@@ -270,7 +333,7 @@ const NewTable = () => {
                                     </Tooltip>
                                 </Button>
                             )
-                        )}
+                            }
                     </CreateOrFinish>
                 </TableHeader>
                 <TableFooter>

@@ -1,4 +1,4 @@
-import { useEffect,useState } from "react";
+import { useEffect,useRef,useState } from "react";
 import Products from "./Admin/Products";
 import React from "react";
 import Tables from "./Admin/Tables";
@@ -18,10 +18,14 @@ function App() {
 
   const db = getDatabase()
   const [data,setData]=useState([])
+  const [callNavigationFromNavbar,setCallNavigationFromNavbar] = useState({
+    tableNumber:null,
+    tableType:''
+  })
   const [notify,setNotify]=useState([]);
   const [open, setOpen] =  useState(false);
   const [tablesData,setTablesData]=useState()
-  const [ordersData,setOrdersData]=useState()
+  const [ordersData,setOrdersData]=useState([])
   const toast=useToast()
   const [numberOfPeople,setNumberOfPeople]=useState(1)
 
@@ -48,7 +52,7 @@ const tableStatuses= ['empty','booked','full']
 const typeOfTables = ['xavli', 'darun', 'berun', 'Все'];
 const typeOfFood = ['Блюдо', 'Хлеб', 'Салат', 'Напиток', 'Другой', 'Все'];
 const [products, setProducts]=useState([])
-
+const printRef = useRef();
 useEffect(()=>{
   const initialref=ref(db,"/table");
   onValue(initialref, (snapshot) => {
@@ -72,8 +76,7 @@ useEffect(()=>{
   onValue(ordersRef, async(snapshot) => {
     let orderData = snapshot.val();
     await orderData && setOrdersData(Object.entries(orderData));
-    console.log("ordersData",Object.entries(orderData))
-  })
+   })
 
   const starCountRefProd = ref(db, 'product/');
   onValue(starCountRefProd, (snapshot) => {
@@ -98,11 +101,14 @@ useEffect(()=>{
    }
  },[notify.change])
 
+
+
  const cafeData = {
   numberOfPeople,
   numberOfPeople,
   setNumberOfPeople: (e) => setNumberOfPeople(e),
   notify,
+  setNotify: (e) => setNotify(e),
   tablesData,
   products,
   setProducts: (e) => setProducts(e),
@@ -117,16 +123,19 @@ useEffect(()=>{
   statuses,
   ordersData,
   setOrdersData: (e) => setOrdersData(e),
+  callNavigationFromNavbar,
+  setCallNavigationFromNavbar:(e)=>setCallNavigationFromNavbar(e),
+  printRef
 }
 
   return (
     <MyContext.Provider value={cafeData}>
       <Router>
-      <Navbar/>
         <audio id="удален" src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/pause.wav" />
         <audio id="принят" src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3" />
         <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
         <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
+        <Navbar/>
         <Routes>
           <Route exact path="/" element={<Tables/>} />
           <Route path="/products"  element={<Products/>}  />

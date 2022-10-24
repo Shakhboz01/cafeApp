@@ -7,17 +7,29 @@ import { MyContext } from '../App'
 const Navbar = () => {
 
   const values = useContext(MyContext);
-  const {tablesData,numberOfPeople} = values;
-
+  const {tablesData, setCallNavigationFromNavbar} = values;
   const navigate = useNavigate()
   const navigations=(item)=>{
-    navigate("/")
-    setTimeout(() => {
-      navigate("order"+"/"+item[1].tableNumber+"/"+numberOfPeople+"/"+item[0])
-    }, 100);
-    // if(window.location.pathname.split("/")[1] == "order" ){
-    //   window.location.reload();
-    // }
+      try{
+        setCallNavigationFromNavbar({
+          tableNumber:item[1].tableNumber,
+          tableType: item[1].tableType
+        })
+        if(window.location.pathname.split('/')[1] === 'order'){
+          navigate('/')
+          setTimeout(() => {
+            navigate(`/order/${item[1].tableNumber}/${item[1].tableType}`)
+          }, 200);
+        }
+        else{
+          navigate(`/order/${item[1].tableNumber}/${item[1].tableType}`)
+
+        }
+
+      }
+      catch(error){
+        console.log('error occured: ',error)
+      }
   }
   return (
     <div style={{position:"fixed", width:"100vw",zIndex:2 }} >
@@ -55,9 +67,9 @@ const Navbar = () => {
               <ul class=" bg-dark dropdown-menu">
                 {tablesData && tablesData.sort((a,b)=>a[1].tableNumber-b[1].tableNumber)
                 .filter(table=>table[1].status == 'full').map(item=>(
-                  // <Link   to={"order"+"/"+item[1].tableNumber+"/"+numberOfPeople+"/"+item[0]} >
-                  <div key={item[0]} onClick={()=>navigations(item)} style={{cursor:"pointer"}}  className='nav-link'  >{item[1].tableNumber} {item[1].title} </div>
-                  // </Link>
+                    <div onClick={() => navigations(item)} key={item[0]} style={{cursor:"pointer"}} className='nav-link'  >
+                      {item[1].tableNumber} {item[1].title}
+                    </div>
                 ))}
               </ul>
             </li>
