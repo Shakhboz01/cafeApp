@@ -11,6 +11,9 @@ import Details from "./Tailor/Details";
 import firebase from "./firebase.config";
 import SHowProduct from "./Admin/SHowProduct";
 import NewTable from "./Admin/NewTable";
+import TemporaryPage from "./Components/TemporaryPage";
+import Settings from "./Pages/Settings";
+import Home from "./Pages/Home";
 
 export const MyContext = React.createContext();
 
@@ -23,11 +26,12 @@ function App() {
     tableType:''
   })
   const [notify,setNotify]=useState([]);
-  const [open, setOpen] =  useState(false);
   const [tablesData,setTablesData]=useState()
   const [ordersData,setOrdersData]=useState([])
   const toast=useToast()
   const [numberOfPeople,setNumberOfPeople]=useState(1)
+  //for printing self product
+  const [single, setSingle] = useState({})
 
   const currentDate = () => {
     const current = new Date();
@@ -47,18 +51,28 @@ const callToast=()=>{
 }
 
   //for orders
-const statuses=['добавил','принял','готовил',"доставил"]
+const statuses = ['добавил','принял','готовил',"доставил"]
 const tableStatuses= ['empty','booked','full']
-const typeOfTables = ['xavli', 'darun', 'berun', 'Все'];
-const typeOfFood = ['Блюдо', 'Хлеб', 'Салат', 'Напиток', 'Другой', 'Все'];
+const [pathName, setPathName] = useState('');
+const [typeOfTables, setTypeOfTables] = useState([]);
+const [typeOfFood, setTypeOfFood] = useState([]);
+const [productNaming, setProductNaming] = useState([])
 const [products, setProducts]=useState([])
 const printRef = useRef();
+const [currentTypeOfTable, setCurrentTypeOfTable] = useState('Все')
+const [ currentTypeOfFood, setCurrentTypeOfFood]=useState("Все")
+
+useEffect(()=>{
+  setPathName(window.location.pathname)
+},[window.location.pathname])
+
 useEffect(()=>{
   const initialref=ref(db,"/table");
   onValue(initialref, (snapshot) => {
     let datas=snapshot.val()
     if(snapshot.val()){
       setData(Object.entries(datas))
+      console.log('data',Object.entries(datas))
     }
   });
   onValue(ref(db,"/notify"),(snapshot)=>{
@@ -73,6 +87,20 @@ useEffect(()=>{
     await data && setTablesData(Object.entries(data));
   })
 
+  onValue(ref(db, 'settings/typeOfTables'), async(snapshot) => {
+    let data = await snapshot.val()
+    data && setTypeOfTables(data)
+  })
+  onValue(ref(db, 'settings/typeOfFood'), async(snapshot) => {
+    let data = await snapshot.val()
+    data && setTypeOfFood(data)
+  })
+
+  onValue(ref(db, 'settings/productNaming'), async(snapshot) => {
+    let data = await snapshot.val()
+    data && setProductNaming(data)
+  })
+
   onValue(ordersRef, async(snapshot) => {
     let orderData = snapshot.val();
     await orderData && setOrdersData(Object.entries(orderData));
@@ -82,6 +110,7 @@ useEffect(()=>{
   onValue(starCountRefProd, (snapshot) => {
     snapshot.val() && setProducts(Object.entries(snapshot.val()))
   })
+  console.log('pathname is ', window.location.pathname)
 },[])
 
 useEffect(()=>{
@@ -125,27 +154,40 @@ useEffect(()=>{
   setOrdersData: (e) => setOrdersData(e),
   callNavigationFromNavbar,
   setCallNavigationFromNavbar:(e)=>setCallNavigationFromNavbar(e),
-  printRef
+  printRef,
+  single,
+  setSingle: (e) => setSingle(e),
+  setCurrentTypeOfTable: (e) => setCurrentTypeOfTable(e),
+  currentTypeOfTable,
+  setCurrentTypeOfFood: (e) => setCurrentTypeOfFood(e),
+  currentTypeOfFood,
+  toast:(e) => toast(e),
+  productNaming,
 }
 
   return (
-    <MyContext.Provider value={cafeData}>
-      <Router>
+    <Router>
+      <MyContext.Provider value={cafeData}>
         <audio id="удален" src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/pause.wav" />
         <audio id="принят" src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3" />
         <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
         <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
-        <Navbar/>
+        {pathName !== '/' && (
+          <Navbar/>
+        )}
         <Routes>
-          <Route exact path="/" element={<Tables/>} />
+          <Route exact path = "/" element = {<Home/>} />
           <Route path="/products"  element={<Products/>}  />
-          <Route path="/details"  element={<Details tablesData={tablesData} statuses={statuses} data={data} />}  />
-          <Route path="/order/:tableId/:tableType" element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} setOpen={(e)=>setOpen(e)} />}  />
+          <Route path="/old-tables"  element={<Tables/>}  />
+          <Route path="/details"  element={<Details tablesData= {tablesData} statuses={statuses} data={data} />}  />
+          <Route path="/order/:tableId/:tableType" element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} />}  />
           <Route path="/products/:productId" element={<SHowProduct/>}  />
-          <Route path="/tables" element={<NewTable/>}  />
+          <Route path="/tables" element={<NewTable/>}/>
+          <Route path="/temporary" element={<TemporaryPage/>}/>
+          <Route path="/admin/settings" element={<Settings/>}/>
         </Routes>
-      </Router>
-    </MyContext.Provider>
+      </MyContext.Provider>
+    </Router>
   );
 }
 

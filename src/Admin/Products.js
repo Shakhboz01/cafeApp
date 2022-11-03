@@ -84,14 +84,14 @@ font-style:italic;
 
 const Products = () => {
     const values=useContext(MyContext);
-    const {setProducts, products, db, currentDate, typeOfFood} = values;
+    const {setProducts, products, db, productNaming, currentDate, typeOfFood} = values;
     const [product, setProduct]=useState([]);
     const [printable, setPrintable]=useState(false)
     const [data, setData]=useState([]);
     const [specifyRow, setSpecifyRow]=useState('');
     const [isUpdating, setIsUpdating]=useState(false)
     const [show, setShow]=useState(false)
-    const [currentTypeOfFood, setCurrentTypeOfFood]=useState(typeOfFood[typeOfFood.length-1])
+    const [currentTypeOfFood, setCurrentTypeOfFood]=useState('Все')
     const [searchName, setSearchName]=useState('')
     const [sortByLessProdsLeft, setSortByLessProdsLeft]=useState(false)
     //search
@@ -185,6 +185,11 @@ const Products = () => {
                         {typeOfFood.map((item, ind) => (
                             <button onClick={() => setCurrentTypeOfFood(item)} type="button" key={ind} class={`btn btn-${currentTypeOfFood === item ? 'success' : 'secondary'}`}>{item}</button>
                         ))}
+                        <button onClick={() => setCurrentTypeOfFood('Все')} type="button"
+                                class={`btn btn-${currentTypeOfFood === 'Все' ? 'success' : 'secondary'}`}
+                        >
+                        Все
+                        </button>
                     </div>
                 </Flex>
             )}
@@ -216,10 +221,9 @@ const Products = () => {
                     <Select variant='filled' name="addition"
                             defaultValue={product.addition}
                             onChange={(e)=>getData(e)} placeholder='Указание ' >
-                        <option value='Шт.' >Штука</option>
-                        <option value='Порс' >Порс</option>
-                        <option value='Коса' >Коса</option>
-                        <option value='Кг.' >Кг</option>
+                        {productNaming && productNaming.map((naming, ind)=>(
+                          <option value={naming} key={ind}>{naming}</option>
+                        ))}
                     </Select>
                     <InputGroup>
                         <InputLeftElement pointerEvents='none' color='gray.300'
@@ -245,7 +249,7 @@ const Products = () => {
             )}
         </Box>
         <MainContainer>
-            {products && products.filter(product => currentTypeOfFood == typeOfFood[typeOfFood.length-1] ? product : product[1].type === currentTypeOfFood)
+            {products && products.filter(product => currentTypeOfFood === 'Все' ? product : product[1].type === currentTypeOfFood)
                                  .filter(filt=>filt[1].name.toLowerCase().includes(searchName.toLowerCase()))
                                  .filter(product => sortByLessProdsLeft ? product[1].product_left < product[1].restriction : product )
                                  .map(item=>(

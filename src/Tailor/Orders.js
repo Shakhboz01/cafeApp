@@ -37,11 +37,12 @@ import "./orderStyle.css";
 import { useNavigate } from 'react-router-dom';
 import ComponentToPrint from '../Components/ComponentToPrint';
 import { MyContext } from '../App';
+import { BiArrowBack } from 'react-icons/bi';
 
 
 const ImageContainer=styled.div`
-width:80px;
-height:70px;
+width:70px;
+height:65px;
 display:grid;
 place-items:center;
 overflow:hidden;
@@ -53,11 +54,11 @@ object-fit: cover;
 `
 const OrdersAndProds = styled.div`
 display:flex;
-height:85vh;
+height:100vh;
 overfolw:auto;
 `
 const Prods = styled.div`
-flex:1.26;
+flex:1.34;
 background:black;
 display:flex;
 justify-content:flex-start;
@@ -69,6 +70,7 @@ overflow:auto;
 const ProdsHeader = styled.div`
 z-index:1.5;
 align-self:center;
+margin-top:70px;
 `
 const ProdsFooter = styled.div`
 height:100%;
@@ -95,12 +97,10 @@ function AlertDialogExample({item, tablesData, tableInfo, currentOrderData, setS
         total:item[1].price*num,
         desc
     });
-    console.log('currentOrderData',currentOrderData)
     update(ref(db, `todo/${tableInfo[0]}`), {
       totalPrice: tableInfo[1].totalPrice + item[1].price*num
     })
 
-    console.log(tableInfo[1].totalPrice,'tableInfo[1].totalPrice')
     set(ref(db,"/notify"),{
       change:!notify.change,
       description:`${num} ${item[1].name} / ${currentPath.tableNumber}  cтол `,
@@ -119,7 +119,10 @@ function AlertDialogExample({item, tablesData, tableInfo, currentOrderData, setS
           <Box display="flex" justifyContent="flex-end"  alignItems='center'  >
             <div  style={{flex:1,display:"flex",width:'127px',alignItems:"center"}} >
               <AiFillMinusSquare onClick={()=> {if(num>0){setNum(prev=>prev-1)}}} style={{cursor:"pointer",fontSize:"38px"}}  />
-              <Input  width='50px'   isInvalid  errorBorderColor='blue.300' type='number'step="0.01"    value={num} onChange={(e)=>setprice(e)} />
+              <Input  width='50px' isInvalid  errorBorderColor='blue.300'
+                      type='number'step="0.01"  onFocus={(e) => e.target.select()}
+                      value={num} onChange={(e)=>setprice(e)}
+              />
               <BsPlusSquareFill onClick={()=>{setNum(prev=>prev+1)}} style={{cursor:"pointer",fontSize:"31px",marginRight:"5px"}} />
             </div>
             <Button type='submit' colorScheme='blue'>
@@ -219,13 +222,11 @@ function AlertDialogExample({item, tablesData, tableInfo, currentOrderData, setS
 
 
 const Orders = () => {
-  var visitCount = 0
   const values = useContext(MyContext);
-  const {ordersData, setOrdersData, typeOfFood, setNotify, printRef, tablesData, db, products, setCheckData, checkData, statuses, notify} = values
+  const {ordersData, setOrdersData, typeOfFood, setNotify, printRef, single, setSingle, tablesData, db, products, setCheckData, checkData, statuses, notify} = values
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [currentOrderData,setCurrentOrderData] =useState([]);
   const singleRef=useRef()
-  const [single,setSingle]=useState({})
   const [allowToVisit, setAllowToVisit] = useState(true)
   const [currentPath, setCurrentPath] = useState({})
   const [tableInfo, setTableInfo] = useState([[],[{tableNumber:0}]])
@@ -248,13 +249,12 @@ const Orders = () => {
     })
     //get offline
     if(ordersData.length !==0){
-      console.log("ORDER is true", ordersData)
       var firstStep = ordersData.find(item => item[0] === windowPath[3])
       if(firstStep){
         firstStep = firstStep[1]
         var secondStep = Object.values(firstStep)
         var lastStep = Object.entries(secondStep[0])
-        setCurrentOrderData(lastStep)
+        setCurrentOrderData(lastStep.reverse())
       }
     }
     else{
@@ -264,12 +264,9 @@ const Orders = () => {
         let datas = snapshot.val()
         if(datas){
           setCurrentOrderData(Object.entries(datas))
-          console.log('CurrentOrderData',Object.entries(datas))
         }
-      console.log("Didnot from ordersData")
       });
     }
-    visitCount++
     setAllowToVisit(false)
     setTimeout(() => {
       setAllowToVisit(true)
@@ -280,20 +277,12 @@ const Orders = () => {
     if(ordersData.length !== 0){
       var firstStep = ordersData.find(item => item[0] === windowPath[3])
       if(firstStep){
-        console.log("FIRST step true",firstStep[1])
-
         var secondStep = Object.entries(firstStep[1])
         var secondStepIndex = secondStep.findIndex(item => item[0] === windowPath[2]);
-        console.log(secondStep,'secondStep');
         if(secondStepIndex !== -1){
-          console.log(secondStepIndex,'secondStepIndex')
           var lastStep = Object.entries(secondStep[secondStepIndex][1])
-          console.log(';aststep',lastStep)
           setCurrentOrderData(lastStep)
         }
-      }
-      else{
-        console.log("FIRST step false")
       }
     }
   },[ordersData])
@@ -303,6 +292,7 @@ const Orders = () => {
       navigate('/tables')
     }
   },[notify])
+
   const statusChange=(item)=>{
     var itemRef = ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}/${item[0]}`);
     if(item[1].status == statuses[0]){
@@ -344,7 +334,6 @@ const Orders = () => {
       update(ref(db,"todo/"+tableInfo[0]),{
         status:"empty"
       })
-      console.log('tableid', currentPath)
     } catch (error) {
       alert(error)
     }
@@ -382,15 +371,78 @@ const Orders = () => {
   return (
     <div style = {{height:'100vh',fontWeight:"500",overflow:'hidden',background:"#181f34f5" ,fontSize:"larger"}}>
       <div>
-        <Button colorScheme={'red'} marginTop='70px' onClick={()=> closedTable()}>
-        <ReactToPrint
-                trigger={() => <div>Закрыть стол {currentPath.tableNumber}</div> }
-                content={() => printRef.current}
-                />
-        </Button>
-      </div>
-      <div>
         <OrdersAndProds>
+          <div style = {{flex:2,display:'flex', flexDirection:'column',}}>
+            <div style={{display:'flex', marginTop:'70px', marginBottom:'10px', alignItems:'center'}}>
+              <Button size='sm' onClick={()=>navigate('/tables')}>
+                <BiArrowBack style={{fontSize:'28px'}} />
+              </Button>
+              <Button mx='35px' colorScheme={'red'} onClick={()=> closedTable()}>
+              <ReactToPrint
+                      trigger={() => <div>Закрыть стол {currentPath.tableNumber}</div> }
+                      content={() => printRef.current}
+                      />
+              </Button>
+              <ReactToPrint
+                        trigger={() => <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}}/>}
+                        content={() => printRef.current}
+                      />
+            </div>
+            <TableContainer style={{flexDirection:'column', fontWeight:'semi-bold', fontFamily:'sans-serif', overflow:'auto'}} background='#f2f2f2' >
+              <Table variant='striped' bg='white'>
+                <Tbody>
+                  {currentOrderData.length !== 0 && currentOrderData.filter((item,ind)=>ind !== currentOrderData.length-1)
+                                                      .map(item=>(
+                    <Tr key={item[0]} >
+                      <Td>{item[1].name}  {item[1].desc && ( <i style={{textWrap:"wrap",color:"red",}} >({item[1].desc})</i>)  }  </Td>
+                      <Td isNumeric>{item[1].quantity}</Td>
+                      <Td>
+                        <Box display='flex' alignItems='center'>
+                          <Button mr='14px' colorScheme={item[1].status==statuses[0]?"blue":item[1].status===statuses[1]?"yellow":item[1].status===statuses[2]?"pink":"green"}
+                                  onClick={()=>statusChange(item)}>
+                            {item[1].status}
+                          </Button>
+                          <AiFillDelete onDoubleClick={()=>deleteRow(item)}
+                                        style={{cursor:"pointer",margin:"0 5px",color:"red",fontSize:"23px"}} />
+                          {item[1].printable&&(
+                            <div onClick={()=>{handleChange(item[1]) }} >
+                              <ReactToPrint
+                                trigger={() => <BsFillPrinterFill onClick={onOpen} style={{cursor:"pointer", color:"green", fontSize:"25px"}}/>}
+                                content = {() => singleRef.current}
+                              />
+                            </div>
+                          )}
+                        </Box>
+                      </Td>
+                      <Td isNumeric>
+                        {item[1].total} сум
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+                <Tfoot>
+                  <Tr>
+                    <Th>
+                      Cтол {currentPath.tableNumber}
+                    </Th>
+                    <Td>
+                      {tableInfo[1].totalPrice} сум
+                    </Td>
+                    <Th position = 'fixed' top = '72px' left='15px' >
+                    </Th>
+                  </Tr>
+                </Tfoot>
+                <Thead>
+                  <Tr>
+                    <Th>Итого: {tableInfo[1].totalPrice}</Th>
+                    <Th isNumeric>Колич.</Th>
+                    <Th >Статус</Th>
+                    <Th isNumeric>Цена</Th>
+                  </Tr>
+                </Thead>
+              </Table>
+            </TableContainer>
+          </div>
           <Prods>
             <ProdsHeader>
               <Box display='flex' flexDirection='column' alignItems='center' justifyContent='space-evenly'>
@@ -398,7 +450,7 @@ const Orders = () => {
                   <div class="input-group-prepend">
                       <span class="input-group-text" id="inputGroup-sizing-default">Найти</span>
                   </div>
-                  <input onChange={(e) => setSearch(e.target.value)} type="text" class="form-control" value={search} aria-label="Default" aria-describedby="inputGroup-sizing-default"/>
+                  <input onChange={(e) => setSearch(e.target.value)} onFocus={(e) => e.target.select()} type="text" class="form-control" value={search} aria-label="Default" aria-describedby="inputGroup-sizing-default"/>
                 </div>
                 <div class="btn-group btn-group" role="group" aria-label="...">
                     {typeOfFood.map((item, ind) => (
@@ -406,6 +458,11 @@ const Orders = () => {
                           {item}
                         </button>
                     ))}
+                    <button onClick={() => setTypes('Все')} type="button"
+                            class={`btn btn-${types === 'Все' ? 'success' : 'secondary'}`}
+                    >
+                      Все
+                    </button>
                 </div>
               </Box>
             </ProdsHeader>
@@ -432,96 +489,8 @@ const Orders = () => {
               </Container>
             </ProdsFooter>
           </Prods>
-          <TableContainer style={{flex:2,fontWeight:'semi-bold', fontFamily:'sans-serif',  overflow:'auto'}} background='#f2f2f2' >
-            <Table variant='striped' bg='white'>
-              <Thead>
-                <Tr>
-                  <Th>Имя</Th>
-                  <Th isNumeric>Колич.</Th>
-                  <Th >Статус</Th>
-                  <Th isNumeric>Цена</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {currentOrderData.length !== 0 && currentOrderData.filter((item,ind)=>ind !== currentOrderData.length-1)
-                                                     .map(item=>(
-                  <Tr key={item[0]} >
-                    <Td>{item[1].name}  {item[1].desc && ( <i style={{textWrap:"wrap",color:"red",}} >({item[1].desc})</i>)  }  </Td>
-                    <Td isNumeric>{item[1].quantity}</Td>
-                    <Td>
-                      <Box display='flex' alignItems='center'>
-                        <Button mr='14px' colorScheme={item[1].status==statuses[0]?"blue":item[1].status===statuses[1]?"yellow":item[1].status===statuses[2]?"pink":"green"}
-                                onClick={()=>statusChange(item)}>
-                          {item[1].status}
-                        </Button>
-                        <AiFillDelete onDoubleClick={()=>deleteRow(item)}
-                                      style={{cursor:"pointer",margin:"0 5px",color:"red",fontSize:"23px"}} />
-                        {item[1].printable&&(
-                          <div onClick={()=>{handleChange(item[1]) }} >
-                            <BsFillPrinterFill onClick={onOpen}
-                                              style={{cursor:"pointer",color:"green",fontSize:"25px"}} />
-                          </div>
-                        )}
-                      </Box>
-                    </Td>
-                    <Td isNumeric>
-                      {item[1].total} сум
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-              <Tfoot>
-                <Tr>
-                  <Th>
-                    Cтол {currentPath.tableNumber}
-                  </Th>
-                  <Th position = 'fixed' top = '52px' right='15px' >
-                    <ReactToPrint
-                      trigger={() => <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}}/>}
-                      content={() => printRef.current}
-                    />
-                  </Th>
-                </Tr>
-              </Tfoot>
-            </Table>
-          </TableContainer>
         </OrdersAndProds>
-        <div>
-          <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay/>
-              <ModalContent>
-                <ModalCloseButton/>
-                  <table style={{margin:"70px 0 ",width:"375px",fontWeight:'bold',fontSize:"30px" ,color:'black' ,border:"2px solid black"}} ref={singleRef} >
-                    <thead>
-                      <tr style={{border:"2px solid black"}} >
-                        <th>Имя</th>
-                        <th style={{border:"2px solid black"}} >Кол.</th>
-                        <th>Стол</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr style={{padding:"13px 0",border:"2px solid black"}} >
-                        <td>{single.name}</td>
-                        <td style={{border:"2px solid black"}} >{single.quantity}</td>
-                        <td>{single.table}</td>
-                      </tr>
-                    </tbody>
-                    <p style={{fontSize:"22px"}} ><i>{single.desc}</i></p>
-                  </table>
-                <ModalFooter>
-                  <Button colorScheme='red' mr={3} onClick={onClose}>
-                    Закрыть
-                  </Button>
-                  <ReactToPrint
-                    onClick={onClose}
-                    trigger={() => <Button colorScheme="blue" variant='ghost'>Печатать</Button>}
-                    content={() => singleRef.current}
-                  />
-                </ModalFooter>
-              </ModalContent>
-          </Modal>
-        </div>
-        <div id='for_print' style={{display:'none'}}>
+        <div id='for_print' style={{ display:'none' }}>
           <ComponentToPrint
             ref = {printRef}
             totalPrice = {tableInfo[1].totalPrice}
@@ -529,6 +498,25 @@ const Orders = () => {
             tableNumber = {currentPath.tableNumber}
             tableType = {currentPath.tableType}
           />
+        </div>
+        <div id='for_print' style={{display:'none'}}>
+          <table ref={singleRef} style={{margin:"70px 0 ",width:"375px",fontWeight:'bold',fontSize:"30px" ,color:'black' ,border:"2px solid black"}} >
+            <thead>
+              <tr style={{border:"2px solid black"}}>
+                <th>Имя</th>
+                <th style={{border:"2px solid black"}}>Кол.</th>
+                <th>Стол</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{padding:"13px 0",border:"2px solid black"}} >
+                <td>{single.name}</td>
+                <td style={{border:"2px solid black"}} >{single.quantity}</td>
+                <td>{single.table}</td>
+              </tr>
+            </tbody>
+            <p style={{fontSize:"22px"}} ><i>{single.desc}</i></p>
+          </table>
         </div>
       </div>
     </div>

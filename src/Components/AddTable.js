@@ -30,6 +30,7 @@ const AddTable = ({isOpen, onOpen, onClose, title,setTitle,tableNumber,updatingT
         status: tableStatuses[0]
     });
     setTitle("")
+    onClose()
     setTableNumber(null)
   }
 
@@ -41,6 +42,7 @@ const AddTable = ({isOpen, onOpen, onClose, title,setTitle,tableNumber,updatingT
     setSpecifyRow(""); setTableType(typeOfTables[0]);
     setTableNumber(null); setTitle('');
     setUpdatingTable(false);
+    onClose()
     }
 
   return (
@@ -56,7 +58,7 @@ const AddTable = ({isOpen, onOpen, onClose, title,setTitle,tableNumber,updatingT
         <AlertDialogOverlay />
         <AlertDialogContent>
         <form style={{color:"white", display:"flex", flexDirection:"column"}} onSubmit={(e)=> updatingTable ? updateData(e) : createNewTable(e)}  >
-          <AlertDialogHeader color='black'>Стол</AlertDialogHeader>
+          <AlertDialogHeader color='black'>{updatingTable ? 'Изменить стол:' : 'Новый стол:' }</AlertDialogHeader>
           <AlertDialogCloseButton />
           <AlertDialogBody>
                 <Input color={'black'} defaultValue = {tableNumber} required placeholder='Номер стола' onChange={(e)=>setTableNumber(e.target.value)} name="number" type='number'/>
@@ -70,9 +72,9 @@ const AddTable = ({isOpen, onOpen, onClose, title,setTitle,tableNumber,updatingT
           </AlertDialogBody>
           <AlertDialogFooter>
             <Button colorScheme='red' ref={cancelRef} onClick={onClose}>
-              No
+              Отменить
             </Button>
-            <Button colorScheme='blue' type='submit' onClick={onClose} ml={3}>
+            <Button colorScheme='blue' type='submit'  ml={3}>
             {updatingTable ? 'Редактировать' : 'Добавить'}
             </Button>
           </AlertDialogFooter>

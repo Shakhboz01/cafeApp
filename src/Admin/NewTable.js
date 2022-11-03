@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Flex, Input, Spacer, Tooltip, useDisclosure } from '@chakra-ui/react'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { BsPeopleFill, BsPlusSquareFill } from 'react-icons/bs'
 import { MdPlace } from 'react-icons/md'
 import {FaMoneyBillWave} from 'react-icons/fa'
@@ -13,24 +13,23 @@ import AddTable from '../Components/AddTable'
 import { getDatabase,remove, ref, set, update } from "firebase/database";
 import { useNavigate } from 'react-router-dom'
 import ComponentToPrint from '../Components/ComponentToPrint'
-import ReactToPrint from 'react-to-print'
+import ReactToPrint, { useReactToPrint } from 'react-to-print'
 
 const TableContainer = styled.div`
 display:flex;
-width:1100px;
-margin:15px auto;
-flex-wrap:wrap;
+width:100%;
+margin:auto;
 justify-content:space-evenly;
+flex-wrap:wrap;
 `
 
 const Table = styled.div`
-width:330px;
+width:290px;
+overflow:hidden;
 height:200px;
-border-radius:20px;
-background:red;
 display:flex;
-margin: 25px 0;
-flex-direction:column;
+margin: 12px 5px;
+flex-direction: column;
 `
 
 const TableHeader  = styled.div`
@@ -105,16 +104,19 @@ justify-content:space-between;
 `
 const NewTable = () => {
     const values = useContext(MyContext)
-    const {typeOfTables, db, printRef, ordersData, tableStatuses, currentDate, notify, tablesData} = values;
-
+    const {currentTypeOfTable, setCurrentTypeOfTable, typeOfTables, db, printRef, ordersData, tableStatuses, currentDate, notify, tablesData} = values;
+    const singleRef=useRef()
     const [searchName, setSearchName] = useState('');
-    const [currentTypeOfFood, setCurrentTypeOfFood] = useState(typeOfTables[typeOfTables.length - 1])
     const [specifyRow, setSpecifyRow]=useState("")
     const [title, setTitle]=useState("")
     const [tableNumber, setTableNumber]=useState(null)
     const [tableType, setTableType]=useState('')
     const [updatingTable, setUpdatingTable] = useState(false)
     const [numberOfPeople, setNumberOfPeople] = useState(1);
+    const [tableInfo, setTableInfo] = useState({
+        tableNumber:null, tableType:'', totalPrice:0
+    })
+    const [currentOrderData, setCurrentOrderData] = useState();
     const [totalPriceAndNumberToPrint, setTotalPriceAndNumberToPrint] = useState({
         ordersData:[],
         tableNumber:0,
@@ -218,6 +220,9 @@ const NewTable = () => {
     //         setAllowToPrint(true)
     //     }
     // }
+    const handleDoublePrint = useReactToPrint({
+        content: () => singleRef.current
+    });
     const closedTable = (item) => {
       remove(ref(db,`table/${item[1].tableType}/${item[1].tableNumber}`))
       update(ref(db,"todo/"+item[0]),{
@@ -229,6 +234,23 @@ const NewTable = () => {
         status:"warning",
         title:"Заказ завершен"
       })
+      handleDoublePrint()
+    }
+
+    const setPrintDetail = (item) => {
+      console.log('This is orders data',ordersData)
+      const {tableNumber, tableType, totalPrice} = item[1];
+      setTableInfo({tableNumber, tableType, totalPrice})
+      if(ordersData.length !==0){
+        var firstStep = ordersData.find(item => item[0] === tableType)
+        if(firstStep){
+          firstStep = firstStep[1]
+          var secondStep = Object.values(firstStep)
+          var lastStep = Object.entries(secondStep[0])
+          setCurrentOrderData(lastStep.reverse())
+        }
+      }
+      console.log('This is current data',lastStep.reverse())
     }
 
     const navigateToOrders = (item) => {
@@ -238,9 +260,9 @@ const NewTable = () => {
     }
   return (
     <div style={{background:'rgb(12 31 58)'}} >
-     <Button ></Button>
-     <Flex m="70px 10px 10px 10px" mx='1.5vw' alignItems={'center'} w='97vw' >
-        <AddTable tableType = {tableType} setTableType={(e)=>setTableType(e)}
+     <Button></Button>
+     <Flex mt="40px" mx='1.5vw' justifyContent={'center'} flexWrap={'wrap'} alignItems={'center'} w='97vw' >
+        <AddTable mx='5px' tableType = {tableType} setTableType={(e)=>setTableType(e)}
                 setUpdatingTable={(e)=>setUpdatingTable(e)}
                 updatingTable={updatingTable}
                 setTableNumber ={(e)=>setTableNumber(e)} specifyRow={specifyRow}
@@ -250,7 +272,7 @@ const NewTable = () => {
             Добавить стол
         </AddTable>
         <Spacer/>
-        <div style={{width:'200px'}} class="input-group">
+        <div style={{width:'200px', margin:'5px 0'}} class="input-group">
             <div class="input-group-prepend">
                 <span class="input-group-text" id="inputGroup-sizing-default">Найти</span>
             </div>
@@ -259,14 +281,15 @@ const NewTable = () => {
         <Spacer/>
         <div class="btn-group btn-group" role="group" aria-label="...">
             {typeOfTables.map((item, ind) => (
-                <button onClick={() => setCurrentTypeOfFood(item)} type="button" key={ind} class={`btn btn-${currentTypeOfFood === item ? 'success' : 'secondary'}`}>{item}</button>
+                <button onClick={() => setCurrentTypeOfTable(item)} type="button" key={ind} class={`btn btn-${currentTypeOfTable === item ? 'success' : 'secondary'}`}>{item}</button>
             ))}
+                <button onClick={() => setCurrentTypeOfTable('Все')} type="button" class={`btn btn-${currentTypeOfTable === 'Все' ? 'success' : 'secondary'}`}>Все</button>
         </div>
     </Flex>
-     <TableContainer>
-        {tablesData && tablesData.filter(table => currentTypeOfFood == typeOfTables[typeOfTables.length-1] ? table : table[1].tableType === currentTypeOfFood)
+     <TableContainer  overflowY='hidden' >
+        {tablesData && tablesData.filter(table => currentTypeOfTable == 'Все' ? table : table[1].tableType === currentTypeOfTable)
                                  .filter(filt=>filt[1].tableNumber.toLowerCase().includes(searchName.toLowerCase()))
-                                 .sort((a=>a[1].status === tableStatuses[2]))
+                                 .sort(((a,b)=>a[1].tableNumber - b[1].tableNumber))
                                  .map(item => (
             <Table>
                 <TableHeader>
@@ -293,11 +316,11 @@ const NewTable = () => {
                         <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <span style={{cursor:'pointer'}} onClick={()=> cancelBooking(item)} class="dropdown-item">
-                                        Отменить
-                                    </span>
-                                </div>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <span style={{cursor:'pointer'}} onClick={()=> cancelBooking(item)} class="dropdown-item">
+                                    Отменить
+                                </span>
+                            </div>
                         </div>
                       )}
                     </Dropdown>
@@ -321,13 +344,12 @@ const NewTable = () => {
                         )}
                     </InputOrPrint>
                     <CreateOrFinish>
-
                             {item[1].status === tableStatuses[0] || item[1].status === tableStatuses[1] ? (
                                 <Button onClick={() => createTable(item[1].tableType, item[1].tableNumber,item[1].id)} colorScheme='green'>
                                     <AiOutlineArrowRight/>
                                 </Button>
                             ):(
-                                <Button onClick={() => closedTable(item)} colorScheme='red'>
+                                <Button onClick={() => setPrintDetail(item)} onDoubleClick={() => closedTable(item)} colorScheme='red'>
                                     <Tooltip hasArrow label="Закрать стол" >
                                       <BiLogOut/>
                                     </Tooltip>
@@ -370,6 +392,15 @@ const NewTable = () => {
                                  ))
         }
      </TableContainer>
+        <div id='for_print' style={{display:'none'}}>
+            <ComponentToPrint
+            ref = {singleRef}
+            totalPrice = {tableInfo.totalPrice}
+            ordersData = {currentOrderData}
+            tableNumber = {tableInfo.tableNumber}
+            tableType = {tableInfo.tableType}
+          />
+        </div>
     </div>
   )
 }

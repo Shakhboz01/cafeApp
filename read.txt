@@ -1,15 +1,3 @@
-const cafeData = {
-  numberOfPeople: numberOfPeople,
-  tablesData: tablesData,
-  numberOfPeople: numberOfPeople,
-  setNumberOfPeople: (e) => setNumberOfPeople(e),
-  notify: notify,
-  tablesData: tablesData
-}
-
-
-
-
-
-
-adding new table
+typeOfTable
+typeOfFood
+Product ending (kg,..)
