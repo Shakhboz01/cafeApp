@@ -104,7 +104,9 @@ justify-content:space-between;
 `
 const NewTable = () => {
     const values = useContext(MyContext)
-    const {currentTypeOfTable, setCurrentTypeOfTable, typeOfTables, db, printRef, ordersData, tableStatuses, currentDate, notify, tablesData} = values;
+    const {currentTypeOfTable, setCurrentTypeOfTable, typeOfTables, db,
+           ordersData, checkNumber, tableStatuses, currentDate, notify, tablesData
+          } = values;
     const singleRef=useRef()
     const [searchName, setSearchName] = useState('');
     const [specifyRow, setSpecifyRow]=useState("")
@@ -158,12 +160,14 @@ const NewTable = () => {
             start:currentDate,
         });
 
-        update(ref(db,'todo/' + orderId),{
-          status:'full',
-          start:currentDate,
-          numberOfPeople,
-          totalPrice: 0
-        })
+      update(ref(db,'settings'),{checkNumber: checkNumber + 1})
+      console.log(checkNumber)
+      update(ref(db,'todo/' + orderId),{
+        status:'full',
+        start:currentDate,
+        numberOfPeople,
+        totalPrice: 0
+      })
 
         set(ref(db,"/notify"),{
             change:!notify.change,

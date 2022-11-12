@@ -5,7 +5,7 @@ import { MyContext } from '../App'
 
 const Navbar = () => {
   const values = useContext(MyContext);
-  const {tablesData, setCallNavigationFromNavbar, tableStatuses} = values;
+  const {tablesData, currentUser, setShowNav, setCurrentUser, setCallNavigationFromNavbar, tableStatuses} = values;
   const navigate = useNavigate()
   const navigations=(item)=>{
     try{
@@ -21,13 +21,18 @@ const Navbar = () => {
       }
       else{
         navigate(`/order/${item[1].tableNumber}/${item[1].tableType}`)
-
       }
 
     }
     catch(error){
       console.log('error occured: ',error)
     }
+  }
+
+  const logOut = () => {
+    setCurrentUser('');
+    localStorage.removeItem('userData');
+    setShowNav(false)
   }
   return (
     <div style={{position:"fixed",width:"100vw",zIndex:2 }} >
@@ -76,6 +81,11 @@ const Navbar = () => {
              </li>
             )}
           </ul>
+          <div class="my-2 my-lg-0">
+            {currentUser && (
+              <button onClick={()=>logOut()} class="btn btn-danger my-2 my-sm-0" type="submit">Выйти</button>
+            )}
+          </div>
         </div>
       </nav>
     </div>

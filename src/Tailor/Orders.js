@@ -374,7 +374,7 @@ const Orders = () => {
         <OrdersAndProds>
           <div style = {{flex:2,display:'flex', flexDirection:'column',}}>
             <div style={{display:'flex', marginTop:'70px', marginBottom:'10px', alignItems:'center'}}>
-              <Button size='sm' onClick={()=>navigate('/tables')}>
+              <Button onClick={()=>navigate('/tables')} size='sm'>
                 <BiArrowBack style={{fontSize:'28px'}} />
               </Button>
               <Button mx='35px' colorScheme={'red'} onClick={()=> closedTable()}>
@@ -428,8 +428,6 @@ const Orders = () => {
                     <Td>
                       {tableInfo[1].totalPrice} сум
                     </Td>
-                    <Th position = 'fixed' top = '72px' left='15px' >
-                    </Th>
                   </Tr>
                 </Tfoot>
                 <Thead>

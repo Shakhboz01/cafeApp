@@ -38,7 +38,7 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
           </Th>
         </Tr>
         <Tr fontWeight='bold' color='black' border="2px solid black"  >
-          <Th  border="2px solid" color='black'>
+          <Th border="2px solid" color='black'>
             Имя
           </Th>
           <Th textAlign='center' border="2px solid"color='black'>
@@ -69,10 +69,10 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
             Стол:{tableNumber}
           </Td>
           <Td>
-            Услуга:
+            Услуга: 0 сум
           </Td>
-          <Td textAlign='right'>
-            0 сум
+          <Td border="2px solid" textAlign='right'>
+            Чек №: 122222
           </Td>
         </Tr>
         <Tr>

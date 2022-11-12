@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { MyContext } from '../App'
 
 const ButtonCover=styled.div`
 height:60px;
@@ -32,6 +33,8 @@ color:white;
 
 const Home = () => {
   const navigate = useNavigate();
+  const values = useContext(MyContext);
+  const {setShowNav} = values;
   return (
     <div style={{width:'100vw', height:'100vh', background:'black', display:'grid',placeItems:'center'}}>
       <div>
@@ -40,7 +43,7 @@ const Home = () => {
           <footer class="blockquote-footer mt-1.5"><cite title="Source Title">Правдивость</cite> ведет к праведности!</footer>
         </blockquote>
         <ButtonCover  >
-          <Button onClick={()=>navigate('/tables')} sx={{fontWeight:"bold"}} className='animate__animated animate__fadeInUp' >Начать работу</Button>
+          <Button onClick={()=>{setShowNav(true);navigate('/tables')}} sx={{fontWeight:"bold"}} className='animate__animated animate__fadeInUp' >Начать работу</Button>
         </ButtonCover>
       </div>
     </div>

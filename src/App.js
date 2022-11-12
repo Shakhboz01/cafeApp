@@ -4,7 +4,7 @@ import React from "react";
 import Tables from "./Admin/Tables";
 import Navbar from "./Components/Navbar";
 import { getDatabase, onValue, ref } from "firebase/database";
-import {BrowserRouter as Router,Routes,Route} from "react-router-dom";
+import {BrowserRouter as Router,Routes,Route, } from "react-router-dom";
 import Orders from "./Tailor/Orders";
 import {useToast} from '@chakra-ui/react'
 import Details from "./Tailor/Details";
@@ -14,6 +14,9 @@ import NewTable from "./Admin/NewTable";
 import TemporaryPage from "./Components/TemporaryPage";
 import Settings from "./Pages/Settings";
 import Home from "./Pages/Home";
+import Login from "./Pages/Login";
+import PrivateRoute from "./Components/PrivateRoutes";
+import LoginProvider from "./Components/LoginContext";
 
 export const MyContext = React.createContext();
 
@@ -32,6 +35,9 @@ function App() {
   const [numberOfPeople,setNumberOfPeople]=useState(1)
   //for printing self product
   const [single, setSingle] = useState({})
+  const localUser = JSON.parse(localStorage.getItem('userData')) || null;
+  const [currentUser, setCurrentUser] = useState(localUser)
+  const [signedIn, setSignedIn] = useState(localUser);
 
   const currentDate = () => {
     const current = new Date();
@@ -53,31 +59,32 @@ const callToast=()=>{
   //for orders
 const statuses = ['добавил','принял','готовил',"доставил"]
 const tableStatuses= ['empty','booked','full']
-const [pathName, setPathName] = useState('');
 const [typeOfTables, setTypeOfTables] = useState([]);
 const [typeOfFood, setTypeOfFood] = useState([]);
 const [productNaming, setProductNaming] = useState([])
+const [checkNumber, setCheckNumber] = useState(null)
+
 const [products, setProducts]=useState([])
 const printRef = useRef();
 const [currentTypeOfTable, setCurrentTypeOfTable] = useState('Все')
 const [ currentTypeOfFood, setCurrentTypeOfFood]=useState("Все")
+const [showNav, setShowNav] = useState(false)
+
 
 useEffect(()=>{
-  setPathName(window.location.pathname)
-},[window.location.pathname])
-
-useEffect(()=>{
+  if(window.location.pathname !== '/' && currentUser){
+    setShowNav(true)
+  }
   const initialref=ref(db,"/table");
   onValue(initialref, (snapshot) => {
     let datas=snapshot.val()
     if(snapshot.val()){
       setData(Object.entries(datas))
-      console.log('data',Object.entries(datas))
     }
   });
   onValue(ref(db,"/notify"),(snapshot)=>{
     if(snapshot.val()){
-      setNotify(snapshot.val())
+      setNotify(snapshot.val());
     }
   })
   const starCountRef = ref(db, 'todo/');
@@ -99,7 +106,12 @@ useEffect(()=>{
   onValue(ref(db, 'settings/productNaming'), async(snapshot) => {
     let data = await snapshot.val()
     data && setProductNaming(data)
-  })
+  });
+
+  onValue(ref(db, 'settings/checkNumber'), async(snapshot) => {
+    let data = await snapshot.val()
+    data && setCheckNumber(data)
+  });
 
   onValue(ordersRef, async(snapshot) => {
     let orderData = snapshot.val();
@@ -110,7 +122,7 @@ useEffect(()=>{
   onValue(starCountRefProd, (snapshot) => {
     snapshot.val() && setProducts(Object.entries(snapshot.val()))
   })
-  console.log('pathname is ', window.location.pathname)
+
 },[])
 
 useEffect(()=>{
@@ -130,9 +142,7 @@ useEffect(()=>{
    }
  },[notify.change])
 
-
-
- const cafeData = {
+const cafeData = {
   numberOfPeople,
   numberOfPeople,
   setNumberOfPeople: (e) => setNumberOfPeople(e),
@@ -163,6 +173,14 @@ useEffect(()=>{
   currentTypeOfFood,
   toast:(e) => toast(e),
   productNaming,
+  setCurrentUser:(e)=>setCurrentUser(e),
+  currentUser,
+  setSignedIn:(e)=>setSignedIn(e),
+  signedIn,
+  showNav,
+  setShowNav: (e) => setShowNav(e),
+  setCheckNumber: (e) => setCheckNumber(e),
+  checkNumber
 }
 
   return (
@@ -172,20 +190,25 @@ useEffect(()=>{
         <audio id="принят" src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3" />
         <audio id="завершен" src="http://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3" />
         <audio id="стол" src="https://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a" />
-        {pathName !== '/' && (
+        {showNav && (
           <Navbar/>
         )}
-        <Routes>
-          <Route exact path = "/" element = {<Home/>} />
-          <Route path="/products"  element={<Products/>}  />
-          <Route path="/old-tables"  element={<Tables/>}  />
-          <Route path="/details"  element={<Details tablesData= {tablesData} statuses={statuses} data={data} />}  />
-          <Route path="/order/:tableId/:tableType" element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} />}  />
-          <Route path="/products/:productId" element={<SHowProduct/>}  />
-          <Route path="/tables" element={<NewTable/>}/>
-          <Route path="/temporary" element={<TemporaryPage/>}/>
-          <Route path="/admin/settings" element={<Settings/>}/>
-        </Routes>
+        <LoginProvider>
+          <Routes>
+            <Route exact path = "/" element={<PrivateRoute/>} >
+              <Route exact path="/" element={<Home/>} />
+            </Route>
+            <Route path="/products"  element={<Products/>}  />
+            <Route path="/old-tables"  element={<Tables/>}  />
+            <Route path="/details"  element={<Details tablesData= {tablesData} statuses={statuses} data={data} />}  />
+            <Route path="/order/:tableId/:tableType" element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} />}  />
+            <Route path="/products/:productId" element={<SHowProduct/>}  />
+            <Route path="/tables" element={<NewTable/>}/>
+            <Route path="/temporary" element={<TemporaryPage/>}/>
+            <Route path="/admin/settings" element={<Settings/>}/>
+            <Route path="/login" element={<Login/>}/>
+          </Routes>
+        </LoginProvider>
       </MyContext.Provider>
     </Router>
   );
