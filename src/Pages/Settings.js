@@ -170,7 +170,7 @@ const Settings = () => {
             <div class="input-group-prepend">
               <span class="input-group-text" id="basic-addon1">Новый тип стола</span>
             </div>
-            <input onChange={(e)=> setNewTableName(e.target.value)} required value={newTableName} type="text" class="form-control" placeholder="Название" aria-label="Новый тип стола" aria-describedby="basic-addon1"/>
+            <input onChange={(e)=> setNewTableName(e.target.value)} required value={newTableName} type="text" class="form-control" placeholder="Название (Ведите латинские буквы)" aria-label="Новый тип стола" aria-describedby="basic-addon1"/>
             <button type='submit' className='btn btn-primary'>Добавить</button>
           </form>
         )}

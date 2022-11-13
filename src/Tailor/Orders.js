@@ -229,7 +229,7 @@ const Orders = () => {
   const singleRef=useRef()
   const [allowToVisit, setAllowToVisit] = useState(true)
   const [currentPath, setCurrentPath] = useState({})
-  const [tableInfo, setTableInfo] = useState([[],[{tableNumber:0}]])
+  const [tableInfo, setTableInfo] = useState([[],{tableNumber:0, totalPrice:0}])
   var windowPath = window.location.pathname.split('/')
   const navigate=useNavigate()
 
@@ -238,7 +238,10 @@ const Orders = () => {
       var id = tablesData.find(item => {
         return item[1].tableNumber == windowPath[2] && item[1].tableType === windowPath[3]
       })
+
       setTableInfo(id)
+      console.log('setTableInfo set', id, tablesData)
+      console.log(windowPath[3], windowPath[2], window.location.pathname)
     }
   },[tablesData])
 
