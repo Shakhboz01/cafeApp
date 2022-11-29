@@ -1,4 +1,3 @@
-import Pagination from '@mui/material/Pagination';
 import { getDatabase, remove, push, ref, set, update } from "firebase/database";
 import React,{useContext, useEffect, useState} from 'react'
 import { Box, Button, Center, Flex, Select, Spacer } from '@chakra-ui/react'
@@ -109,10 +108,11 @@ const Products = () => {
         e.preventDefault();
         try {
             set(ref(db, 'product/'+id), {
-                name, url, type, addition, price, printable,
+                name, url, type, addition,
+                price: Number(price), printable,
                 lastAdded_at: currentDate,
-                product_left,
-                restriction,
+                product_left: Number(product_left),
+                restriction: Number(restriction),
                 totalSale:0
             });
             //продано, остался, actualPrice
@@ -140,13 +140,16 @@ const Products = () => {
     }
 
     const updateData=(e)=>{
-        e.preventDefault()
-        update(ref(db,'product/'+specifyRow),{
-            name,url,type,addition,price, printable, restriction
-        })
-        setSpecifyRow("");
-        setProduct({})
-        setShow(false)
+      e.preventDefault()
+      update(ref(db,'product/'+specifyRow),{
+        name,url,type,addition,
+        price: Number(price), printable,
+        restriction: Number(restriction),
+        product_left: Number(product_left)
+      })
+      setSpecifyRow("");
+      setProduct({})
+      setShow(false)
     }
 
     const popularity=(item)=>{
@@ -226,18 +229,21 @@ const Products = () => {
                         ))}
                     </Select>
                     <InputGroup>
-                        <InputLeftElement pointerEvents='none' color='gray.300'
-                                        fontSize='1.2em'
-                                        children='$'
+                        <InputLeftElement
+                          pointerEvents='none' color='gray.300'
+                          fontSize='1.2em'
+                          children='$'
                         />
-                        <Input _placeholder = {{color: 'inherit'}} placeholder = 'Стоимость'
-                            required type='number' name="price" defaultValue={product.price}
+                        <Input
+                            _placeholder = {{color: 'inherit'}} placeholder = 'Стоимость'
+                            required type='number' name="price" step={0.1} defaultValue={product.price}
                             onChange={(e)=>getData(e)}
                         />
                     </InputGroup>
                     <Input _placeholder = {{color: 'inherit'}} placeholder = 'Имеется' required
-                           type ='number' name="product_left" defaultValue={product.product_left}
-                           onChange={(e)=>getData(e)}/>
+                      type ='number' name="product_left" step={0.1} defaultValue = {product.product_left}
+                      onChange = {(e)=>getData(e)}
+                    />
                     <Input _placeholder = {{color: 'inherit'}} placeholder = 'Красная зона'
                            required type ='number' name="restriction"
                            defaultValue={product.restriction} onChange={(e)=> getData(e)}/>

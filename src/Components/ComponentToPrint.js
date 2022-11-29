@@ -19,7 +19,7 @@ import { BsFillPrinterFill } from "react-icons/bs";
 
 
 const ComponentToPrint = React.forwardRef((props,ref)=>{
-  const {ordersData, tableNumber, totalPrice, tableType} = props
+  const {ordersData, tableNumber, checkNumber, totalPrice, tableType} = props
   const [currentPrintData, setCurrentPrintData] = useState([])
 
   return(
@@ -72,7 +72,7 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
             Услуга: 0 сум
           </Td>
           <Td border="2px solid" textAlign='right'>
-            Чек №: 122222
+            Чек №: {checkNumber}
           </Td>
         </Tr>
         <Tr>

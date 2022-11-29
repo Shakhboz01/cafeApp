@@ -65,6 +65,20 @@ const Navbar = () => {
                     </div>
                   </Link>
                 </li>
+                <li className="nav-item">
+                  <Link to="/admin/incomes" >
+                    <div className="nav-link" style={{color:'white'}}>
+                      Доходы
+                    </div>
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/admin/outcomes" >
+                    <div className="nav-link" style={{color:'white'}}>
+                      Расходы
+                    </div>
+                  </Link>
+                </li>
               </ul>
             </li>
             {tablesData && tablesData.find(item => item[1].status === tableStatuses[2]) && (

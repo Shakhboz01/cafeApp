@@ -1,6 +1,7 @@
 import { useEffect,useRef,useState } from "react";
 import Products from "./Admin/Products";
 import React from "react";
+import axios from 'axios'
 import Tables from "./Admin/Tables";
 import Navbar from "./Components/Navbar";
 import { getDatabase, onValue, ref } from "firebase/database";
@@ -17,6 +18,8 @@ import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 import PrivateRoute from "./Components/PrivateRoutes";
 import LoginProvider from "./Components/LoginContext";
+import Incomes from "./Pages/Incomes";
+import Outcomes from "./Pages/Outcomes";
 
 export const MyContext = React.createContext();
 
@@ -60,6 +63,8 @@ const callToast=()=>{
 const statuses = ['добавил','принял','готовил',"доставил"]
 const tableStatuses= ['empty','booked','full']
 const [typeOfTables, setTypeOfTables] = useState([]);
+const [typeOfIncomes, setTypeOfIncomes] = useState(['От стола']);
+const [typeOfOutcomes, setTypeOfOutcomes] = useState(['Приход товаров']);
 const [typeOfFood, setTypeOfFood] = useState([]);
 const [productNaming, setProductNaming] = useState([])
 const [checkNumber, setCheckNumber] = useState(null)
@@ -70,6 +75,9 @@ const [currentTypeOfTable, setCurrentTypeOfTable] = useState('Все')
 const [ currentTypeOfFood, setCurrentTypeOfFood]=useState("Все")
 const [showNav, setShowNav] = useState(false)
 
+//data from node.js
+const [incomesData, setIncomesData] = useState([]);
+const [outcomesData, setOutcomesData] = useState([]);
 
 useEffect(()=>{
   if(window.location.pathname !== '/' && currentUser){
@@ -98,6 +106,14 @@ useEffect(()=>{
     let data = await snapshot.val()
     data && setTypeOfTables(data)
   })
+  onValue(ref(db, 'settings/typeOfIncomes'), async(snapshot) => {
+    let data = await snapshot.val()
+    data && setTypeOfIncomes(data)
+  })
+  onValue(ref(db, 'settings/typeOfOutcomes'), async(snapshot) => {
+    let data = await snapshot.val()
+    data && setTypeOfOutcomes(data)
+  })
   onValue(ref(db, 'settings/typeOfFood'), async(snapshot) => {
     let data = await snapshot.val()
     data && setTypeOfFood(data)
@@ -121,6 +137,7 @@ useEffect(()=>{
   const starCountRefProd = ref(db, 'product/');
   onValue(starCountRefProd, (snapshot) => {
     snapshot.val() && setProducts(Object.entries(snapshot.val()))
+    console.log(snapshot.val())
   })
 
 },[])
@@ -180,7 +197,14 @@ const cafeData = {
   showNav,
   setShowNav: (e) => setShowNav(e),
   setCheckNumber: (e) => setCheckNumber(e),
-  checkNumber
+  checkNumber,
+  axios,
+  typeOfIncomes,
+  typeOfOutcomes,
+  incomesData,
+  setIncomesData:(e)=>setIncomesData(e),
+  setOutcomesData:(e)=>setOutcomesData(e),
+  outcomesData
 }
 
   return (
@@ -206,6 +230,9 @@ const cafeData = {
             <Route path="/tables" element={<NewTable/>}/>
             <Route path="/temporary" element={<TemporaryPage/>}/>
             <Route path="/admin/settings" element={<Settings/>}/>
+            <Route path="/admin/incomes" element={<Incomes/>}/>
+            <Route path="/admin/outcomes" element={<Outcomes/>}/>
+
             <Route path="/login" element={<Login/>}/>
           </Routes>
         </LoginProvider>

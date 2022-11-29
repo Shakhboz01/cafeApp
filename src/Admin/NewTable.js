@@ -14,6 +14,8 @@ import { getDatabase,remove, ref, set, update } from "firebase/database";
 import { useNavigate } from 'react-router-dom'
 import ComponentToPrint from '../Components/ComponentToPrint'
 import ReactToPrint, { useReactToPrint } from 'react-to-print'
+import axios from 'axios'
+
 
 const TableContainer = styled.div`
 display:flex;
@@ -118,7 +120,9 @@ const NewTable = () => {
     const [tableInfo, setTableInfo] = useState({
         tableNumber:null, tableType:'', totalPrice:0
     })
+    const [orderForPost,setOrderForPost] = useState([])
     const [currentOrderData, setCurrentOrderData] = useState();
+    const [currentCheckNum, setCurrentCheckNum] = useState();
     const [totalPriceAndNumberToPrint, setTotalPriceAndNumberToPrint] = useState({
         ordersData:[],
         tableNumber:0,
@@ -158,10 +162,10 @@ const NewTable = () => {
             numberOfPeople,
             status: "active",
             start:currentDate,
+            checkNumber
         });
 
       update(ref(db,'settings'),{checkNumber: checkNumber + 1})
-      console.log(checkNumber)
       update(ref(db,'todo/' + orderId),{
         status:'full',
         start:currentDate,
@@ -230,7 +234,7 @@ const NewTable = () => {
     const closedTable = (item) => {
       remove(ref(db,`table/${item[1].tableType}/${item[1].tableNumber}`))
       update(ref(db,"todo/"+item[0]),{
-        status:"empty"
+        status: "empty"
       })
       set(ref(db,"/notify"),{
         change:!notify.change,
@@ -239,10 +243,12 @@ const NewTable = () => {
         title:"Заказ завершен"
       })
       handleDoublePrint()
+      var checkNum = Object.values(orderForPost)
+      checkNum = checkNum[checkNum.length -1].checkNumber
+      axios.post('http://localhost:5000/set-check', {checkNumber:checkNum, data: orderForPost}).then(res => console.log(res.data, 'res.data'))
     }
 
     const setPrintDetail = (item) => {
-      console.log('This is orders data',ordersData)
       const {tableNumber, tableType, totalPrice} = item[1];
       setTableInfo({tableNumber, tableType, totalPrice})
       if(ordersData.length !==0){
@@ -251,10 +257,13 @@ const NewTable = () => {
           firstStep = firstStep[1]
           var secondStep = Object.values(firstStep)
           var lastStep = Object.entries(secondStep[0])
+          let checkN = Object.values(secondStep[0])
+          setCurrentCheckNum(checkN[checkN.length - 1].checkNumber)
           setCurrentOrderData(lastStep.reverse())
+          setOrderForPost(secondStep[0])
         }
       }
-      console.log('This is current data',lastStep.reverse())
+      // console.log('This is current data', Object.values(secondStep[0]))
     }
 
     const navigateToOrders = (item) => {
@@ -275,6 +284,7 @@ const NewTable = () => {
                 title={title} setTitle={(e)=>setTitle(e)} >
             Добавить стол
         </AddTable>
+
         <Spacer/>
         <div style={{width:'200px', margin:'5px 0'}} class="input-group">
             <div class="input-group-prepend">
@@ -283,6 +293,8 @@ const NewTable = () => {
             <input placeholder='Номер стола' type='number' onChange={(e) => setSearchName(e.target.value)} class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"/>
         </div>
         <Spacer/>
+        {/* <Button variant="contained">Contained</Button> */}
+
         <div class="btn-group btn-group" role="group" aria-label="...">
             {typeOfTables.map((item, ind) => (
                 <button onClick={() => setCurrentTypeOfTable(item)} type="button" key={ind} class={`btn btn-${currentTypeOfTable === item ? 'success' : 'secondary'}`}>{item}</button>
@@ -403,6 +415,7 @@ const NewTable = () => {
             ordersData = {currentOrderData}
             tableNumber = {tableInfo.tableNumber}
             tableType = {tableInfo.tableType}
+            checkNumber = {currentCheckNum}
           />
         </div>
     </div>

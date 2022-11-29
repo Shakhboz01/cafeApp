@@ -3,7 +3,7 @@ import {  useLocation } from 'react-router-dom'
 import { getDatabase, push, onValue,remove, ref, set, update } from "firebase/database";
 import ReactToPrint from 'react-to-print';
 import {AiFillDelete, AiFillEdit, AiOutlineArrowRight} from 'react-icons/ai'
-import  styled from 'styled-components'
+import  styled, { withTheme } from 'styled-components'
 import {BsFillPrinterFill, BsPlusSquareFill} from 'react-icons/bs'
 import {AiFillMinusSquare} from 'react-icons/ai'
 import "./orderStyle.css";
@@ -38,6 +38,7 @@ import { useNavigate } from 'react-router-dom';
 import ComponentToPrint from '../Components/ComponentToPrint';
 import { MyContext } from '../App';
 import { BiArrowBack } from 'react-icons/bi';
+import axios from 'axios';
 
 
 const ImageContainer=styled.div`
@@ -77,7 +78,7 @@ height:100%;
 overflow:auto;
 `
 
-function AlertDialogExample({item, tablesData, tableInfo, currentOrderData, setSearch, notify, currentPath, db}) {
+function AlertDialogExample({item, products, tableInfo, currentOrderData, setSearch, notify, currentPath, db}) {
   //add order
   const [num,setNum]=useState(1);
   const [desc,setDesc]=useState("");
@@ -86,7 +87,7 @@ function AlertDialogExample({item, tablesData, tableInfo, currentOrderData, setS
     setNum(e.target.value);
   }
 
-  const handleSubmit = (e) => {
+  const addProductToTable = (e) => {
     e.preventDefault();
       push(ref(db, `table/${currentPath.tableType}/${currentPath.tableNumber}`), {
         quantity:num + " " + item[1].addition,
@@ -107,21 +108,30 @@ function AlertDialogExample({item, tablesData, tableInfo, currentOrderData, setS
       status:"success",
       title:"Заказ принят"
     })
+
+    var productInfo = products.find(product => product[1].name === item[1].name && product[1].type === item[1].type)
+    const {product_left, totalSale} = productInfo[1]
+    update(ref(db, `product/${productInfo[0]}`), {
+      product_left: Number(product_left) - Number(num),
+      totalSale: Number(totalSale) + Number(num)
+    })
+
     setSearch("")
     setDesc("");
     setNum(1);
   }
-  const [displayInput,setDisplayInput]=useState(true)
+  const [displayInput, setDisplayInput]=useState(true)
   return (
     <Container>
       <Box color='whatsapp.100' >
-        <form onSubmit={(e)=>handleSubmit(e)} >
+        <form onSubmit={(e)=>addProductToTable(e)} >
           <Box display="flex" justifyContent="flex-end"  alignItems='center'  >
             <div  style={{flex:1,display:"flex",width:'127px',alignItems:"center"}} >
               <AiFillMinusSquare onClick={()=> {if(num>0){setNum(prev=>prev-1)}}} style={{cursor:"pointer",fontSize:"38px"}}  />
-              <Input  width='50px' isInvalid  errorBorderColor='blue.300'
-                      type='number'step="0.01"  onFocus={(e) => e.target.select()}
-                      value={num} onChange={(e)=>setprice(e)}
+              <Input
+                width='50px' isInvalid  errorBorderColor='blue.300'
+                type='number'step="0.01"  onFocus={(e) => e.target.select()}
+                value={num} onChange={(e)=>setprice(e)}
               />
               <BsPlusSquareFill onClick={()=>{setNum(prev=>prev+1)}} style={{cursor:"pointer",fontSize:"31px",marginRight:"5px"}} />
             </div>
@@ -223,11 +233,14 @@ function AlertDialogExample({item, tablesData, tableInfo, currentOrderData, setS
 
 const Orders = () => {
   const values = useContext(MyContext);
-  const {ordersData, setOrdersData, typeOfFood, setNotify, printRef, single, setSingle, tablesData, db, products, setCheckData, checkData, statuses, notify} = values
+  const {ordersData, typeOfFood, printRef, single,
+         setSingle, tablesData, db, products,
+         setCheckData, checkData, statuses, notify, checkNumber
+        } = values
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [currentOrderData,setCurrentOrderData] =useState([]);
+  const [currentCheckNum, setCurrentCheckNum] = useState()
   const singleRef=useRef()
-  const [allowToVisit, setAllowToVisit] = useState(true)
   const [currentPath, setCurrentPath] = useState({})
   const [tableInfo, setTableInfo] = useState([[],{tableNumber:0, totalPrice:0}])
   var windowPath = window.location.pathname.split('/')
@@ -240,8 +253,6 @@ const Orders = () => {
       })
 
       setTableInfo(id)
-      console.log('setTableInfo set', id, tablesData)
-      console.log(windowPath[3], windowPath[2], window.location.pathname)
     }
   },[tablesData])
 
@@ -257,6 +268,8 @@ const Orders = () => {
         firstStep = firstStep[1]
         var secondStep = Object.values(firstStep)
         var lastStep = Object.entries(secondStep[0])
+        let checkN = Object.values(secondStep[0])
+        setCurrentCheckNum(checkN[checkN.length - 1].checkNumber)
         setCurrentOrderData(lastStep.reverse())
       }
     }
@@ -270,10 +283,7 @@ const Orders = () => {
         }
       });
     }
-    setAllowToVisit(false)
-    setTimeout(() => {
-      setAllowToVisit(true)
-    }, 2000);
+
   },[])
 
   useEffect(()=>{
@@ -318,8 +328,6 @@ const Orders = () => {
 
     remove(ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}/${item[0]}`))
 
-    let quantity = Number(item[1].quantity.replace( /\D+/g, ''))
-
     update(ref(db, `todo/${tableInfo[0]}`), {
       totalPrice: (tableInfo[1].totalPrice - item[1].total)
     })
@@ -329,10 +337,28 @@ const Orders = () => {
       status:"error",
       title:"Заказ удален"
     })
+
+    var productInfo = products.find(product => product[1].name === item[1].name && product[1].type === item[1].type)
+    const {product_left, totalSale} = productInfo[1]
+    var num = item[1].quantity.split(' ')[0]
+    update(ref(db, `product/${productInfo[0]}`), {
+      product_left: product_left + Number(num),
+      totalSale: totalSale - Number(num)
+    })
   }
 
   const closedTable=()=>{
     try {
+      if(ordersData.length !==0){
+        var firstStep = ordersData.find(item => item[0] === windowPath[3])
+        if(firstStep){
+          firstStep = firstStep[1]
+          var secondStep = Object.values(firstStep)
+          var checkNum = Object.values(secondStep[0])
+          checkNum = checkNum[checkNum.length -1].checkNumber
+          axios.post('http://localhost:5000/set-check', {checkNumber: checkNum,data: secondStep[0]})
+        }
+      }
       remove(ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}`))
       update(ref(db,"todo/"+tableInfo[0]),{
         status:"empty"
@@ -482,7 +508,19 @@ const Orders = () => {
                         </ImageContainer>
                         <h3 style={{flex:1, overflowWrap:"break-word" }} >{item[1].name}  </h3>
                         <div onClick={()=>setItems(item)}>
-                          <AlertDialogExample tableInfo={tableInfo} tablesData={tablesData} ordersData={ordersData} currentOrderData={currentOrderData} currentPath={currentPath} db={db} search={search} setSearch={(e)=>setSearch(e)} notify={notify} item={items}/>
+                          <AlertDialogExample
+                            products = {products}
+                            tableInfo={tableInfo}
+                            tablesData={tablesData}
+                            ordersData={ordersData}
+                            currentOrderData={currentOrderData}
+                            currentPath={currentPath}
+                            db={db}
+                            search={search}
+                            setSearch={(e)=>setSearch(e)}
+                            notify={notify}
+                            item={items}
+                          />
                         </div>
                       </>
                   </Box>
@@ -494,6 +532,7 @@ const Orders = () => {
         <div id='for_print' style={{ display:'none' }}>
           <ComponentToPrint
             ref = {printRef}
+            checkNumber = {currentCheckNum}
             totalPrice = {tableInfo[1].totalPrice}
             ordersData = {currentOrderData}
             tableNumber = {currentPath.tableNumber}
