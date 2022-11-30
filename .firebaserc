@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "mansurshashlik"
+  },
+  "targets": {
+    "mansurshashlik": {
+      "hosting": {
+        "mars-express": [
+          "mars-express"
+        ]
+      }
+    }
   }
 }

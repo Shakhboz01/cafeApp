@@ -83,7 +83,7 @@ const Login = () => {
                     pointerEvents="none"
                     children={<CFaUserAlt color="gray.300" />}
                   />
-                  <Input type="email" onChange={(e)=> setEmail(e.target.value)} placeholder="Почта" />
+                  <Input type="email" onChange={(e)=> setEmail(e.target.value)} placeholder="test@gmail.com" />
                 </InputGroup>
               </FormControl>
               <FormControl>
@@ -95,7 +95,7 @@ const Login = () => {
                   />
                   <Input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Пвроль"
+                    placeholder="testpass"
                     onChange={(e)=>setPassword(e.target.value)}
                   />
                   <InputRightElement width="4.5rem">
@@ -113,7 +113,7 @@ const Login = () => {
                 colorScheme="teal"
                 width="full"
               >
-                Login
+                Войти
               </Button>
             </Stack>
           </form>
