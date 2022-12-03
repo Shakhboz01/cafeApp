@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { Input, Select, useDisclosure } from '@chakra-ui/react'
 import { getDatabase,remove, ref, set, update } from "firebase/database";
 import { v4 as uuidv4 } from 'uuid';
@@ -16,18 +16,23 @@ import {
 import { MyContext } from '../App';
 
 
-const AddTable = ({isOpen, onOpen, onClose, title,setTitle,tableNumber,updatingTable,setUpdatingTable,setTableNumber, specifyRow, setSpecifyRow, setTableType, tableType,children}) => {
+const AddTable = ({isOpen, fee, setFee, onOpen, onClose, title, setTitle, tableNumber,updatingTable,setUpdatingTable,setTableNumber, specifyRow, setSpecifyRow, setTableType, tableType,children}) => {
   const cancelRef = React.useRef()
   const values = useContext(MyContext);
-  const {currentDate, tableStatuses, typeOfTables, db} = values;
+  const {tableStatuses, typeOfTables, db} = values;
+
   let id=uuidv4()
 
-  const createNewTable=(e)=>{
+  const createNewTable = (e)=>{
     e.preventDefault();
     set(ref(db, 'todo/'+id), {
-        title, tableNumber,
-        tableType: typeOfTables[0], id,
-        status: tableStatuses[0]
+      title,
+      tableNumber,
+      tableType: typeOfTables[0],
+      id,
+      status: tableStatuses[0],
+      fee,
+      comment: ''
     });
     setTitle("")
     onClose()
@@ -37,7 +42,7 @@ const AddTable = ({isOpen, onOpen, onClose, title,setTitle,tableNumber,updatingT
   const updateData=(e)=>{
     e.preventDefault()
     update(ref(db,'todo/'+ specifyRow),{
-      title, tableNumber, tableType
+      title, tableNumber, tableType, fee
     })
     setSpecifyRow(""); setTableType(typeOfTables[0]);
     setTableNumber(null); setTitle('');
@@ -68,7 +73,7 @@ const AddTable = ({isOpen, onOpen, onClose, title,setTitle,tableNumber,updatingT
                     <option key = {ind} value = {item}>{item}</option>
                 ))}
                 </Select>
-
+                <Input color={'black'} placeholder='Обслуживание %:' defaultValue={fee} onChange={(e)=>setFee(Number(e.target.value))} type='number' name='title'/>
           </AlertDialogBody>
           <AlertDialogFooter>
             <Button colorScheme='red' ref={cancelRef} onClick={onClose}>

@@ -15,7 +15,7 @@ const LoginProvider = ({children}) => {
     if(!currentUser){
       navigate('/login')
     }
-  },[currentUser])
+},[currentUser])
 
   return (
     <div>

@@ -1,10 +1,5 @@
-import React,{useRef,useEffect, useState } from "react";
-import { useDisclosure, Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalFooter,
-    ModalBody,
+import React from "react";
+import {
     Table,
     Thead,
     Tbody,
@@ -12,15 +7,10 @@ import { useDisclosure, Modal,
     Th,
     Td,
     TableCaption,
-    ModalCloseButton,Button} from  "@chakra-ui/react"
-import ReactToPrint from 'react-to-print';
-import { getDatabase,onValue,ref } from "firebase/database";
-import { BsFillPrinterFill } from "react-icons/bs";
-
+} from  "@chakra-ui/react"
 
 const ComponentToPrint = React.forwardRef((props,ref)=>{
-  const {ordersData, tableNumber, totalPrice, tableType} = props
-  const [currentPrintData, setCurrentPrintData] = useState([])
+  const {ordersData, fee, tableNumber, totalPrice, comment} = props
 
   return(
     <Table ref={ref} style={{tableLayout:"auto"}} width='377px' color='black' fontWeight="semibold"  overflow="hidden" fontSize="lg">
@@ -28,13 +18,13 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
         Спасибо что выбрали нас!
       </TableCaption>
       <TableCaption fontSize='xl' color='black'm='0' fontWeight='bold'>
-        90 195 99 92
+        99 161 43 95
       </TableCaption>
 
       <Thead fontSize='28px' color='black'>
         <Tr fontWeight='bold' border='2px solid black'>
           <Th width='40%' fontSize='38px' colSpan={3} textAlign='center' color='black' border="2px solid">
-            Mars-Express
+            Bek
           </Th>
         </Tr>
         <Tr fontWeight='bold' color='black' border="2px solid black"  >
@@ -68,11 +58,8 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
           <Td border="2px solid">
             Стол:{tableNumber}
           </Td>
-          <Td>
-            Услуга: 0 сум
-          </Td>
-          <Td border="2px solid" textAlign='right'>
-            Чек №: 122222
+          <Td colSpan={2} >
+            Услуга: {fee}%
           </Td>
         </Tr>
         <Tr>
@@ -83,44 +70,14 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
             {totalPrice} сум
           </Td>
         </Tr>
+        <Tr>
+          <Td colSpan={3}>
+            {comment}
+          </Td>
+        </Tr>
       </Tbody>
     </Table>
   )
 })
 
-function BasicUsage({ref, ordersData, totalPrice, tableNumber, children}) {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const componentRef = useRef();
-  return (
-    <>
-      <div onClick={onOpen}>
-      OPEN ME
-      </div>
-      <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay/>
-        <ModalContent>
-          <ModalHeader>
-            <ReactToPrint
-              trigger={() => <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}}/>}
-              content={() => componentRef.current}
-            />
-          </ModalHeader>
-          <ModalCloseButton/>
-          <ModalBody>
-            <ComponentToPrint
-              ref={componentRef} tableNumber={tableNumber}
-              totalPrice={totalPrice} ordersData={ordersData}
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme='red' mr={3} onClick={onClose}>
-              Закрыть
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
-  )
-  }
-
-  export default ComponentToPrint
+export default ComponentToPrint

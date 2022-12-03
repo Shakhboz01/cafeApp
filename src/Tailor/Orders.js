@@ -1,7 +1,7 @@
 import React, { useContext, useEffect,useRef, useState } from 'react'
 import {  useLocation } from 'react-router-dom'
 import { getDatabase, push, onValue,remove, ref, set, update } from "firebase/database";
-import ReactToPrint from 'react-to-print';
+import ReactToPrint, { useReactToPrint } from 'react-to-print';
 import {AiFillDelete, AiFillEdit, AiOutlineArrowRight} from 'react-icons/ai'
 import  styled from 'styled-components'
 import {BsFillPrinterFill, BsPlusSquareFill} from 'react-icons/bs'
@@ -229,7 +229,7 @@ const Orders = () => {
   const singleRef=useRef()
   const [allowToVisit, setAllowToVisit] = useState(true)
   const [currentPath, setCurrentPath] = useState({})
-  const [tableInfo, setTableInfo] = useState([[],{tableNumber:0, totalPrice:0}])
+  const [tableInfo, setTableInfo] = useState([[],{tableNumber:0, totalPrice:0, comment: ''}])
   var windowPath = window.location.pathname.split('/')
   const navigate=useNavigate()
 
@@ -335,7 +335,8 @@ const Orders = () => {
     try {
       remove(ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}`))
       update(ref(db,"todo/"+tableInfo[0]),{
-        status:"empty"
+        status: 'empty',
+        comment: ''
       })
     } catch (error) {
       alert(error)
@@ -350,7 +351,7 @@ const Orders = () => {
     })
   }
 
-  const handleChange=(item)=>{
+  const printSingleProd = (item) => {
     let description="."
     if(item.desc){
       description=item.desc
@@ -371,6 +372,17 @@ const Orders = () => {
   const [types, setTypes]=useState("Все");
   const [search, setSearch]=useState("")
 
+  const [comment, setComment] = useState()
+  const handleCheckComment = (e) => {
+    e.preventDefault();
+    update(ref(db, `todo/${tableInfo[0]}`), {comment})
+    setComment('')
+  }
+
+  const handleDoublePrint = useReactToPrint({
+    content: () => singleRef.current
+  });
+
   return (
     <div style = {{height:'100vh',fontWeight:"500",overflow:'hidden',background:"#181f34f5" ,fontSize:"larger"}}>
       <div>
@@ -387,9 +399,14 @@ const Orders = () => {
                       />
               </Button>
               <ReactToPrint
-                        trigger={() => <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}}/>}
-                        content={() => printRef.current}
-                      />
+                trigger = {() => <BsFillPrinterFill style={{cursor:"pointer",color:"green",fontSize:"25px"}}/>}
+                content={() => printRef.current}
+              />
+              <div style={{width:'200px', margin:'5px 10px'}} class="input-group">
+                <form onSubmit={(e)=>handleCheckComment(e) } >
+                  <input required placeholder = 'Коммент' onChange = {(e) => setComment(e.target.value)} type="text" class="form-control" value={comment} aria-label="Default" aria-describedby="inputGroup-sizing-default"/>
+                </form>
+              </div>
             </div>
             <TableContainer style={{flexDirection:'column', fontWeight:'semi-bold', fontFamily:'sans-serif', overflow:'auto'}} background='#f2f2f2' >
               <Table variant='striped' bg='white'>
@@ -408,11 +425,8 @@ const Orders = () => {
                           <AiFillDelete onDoubleClick={()=>deleteRow(item)}
                                         style={{cursor:"pointer",margin:"0 5px",color:"red",fontSize:"23px"}} />
                           {item[1].printable&&(
-                            <div onClick={()=>{handleChange(item[1]) }} >
-                              <ReactToPrint
-                                trigger={() => <BsFillPrinterFill onClick={onOpen} style={{cursor:"pointer", color:"green", fontSize:"25px"}}/>}
-                                content = {() => singleRef.current}
-                              />
+                            <div onClick={() => printSingleProd(item[1])} onDoubleClick={()=>{handleDoublePrint()}}>
+                              <BsFillPrinterFill style={{cursor:"pointer", color:"green", fontSize:"25px"}}/>
                             </div>
                           )}
                         </Box>
@@ -429,13 +443,13 @@ const Orders = () => {
                       Cтол {currentPath.tableNumber}
                     </Th>
                     <Td>
-                      {tableInfo[1].totalPrice} сум
+                      { tableInfo[1].totalPrice + ((tableInfo[1].fee * tableInfo[1].totalPrice) / 100) } сум
                     </Td>
                   </Tr>
                 </Tfoot>
                 <Thead>
                   <Tr>
-                    <Th>Итого: {tableInfo[1].totalPrice}</Th>
+                    <Th>Итого: {tableInfo[1].totalPrice + ((tableInfo[1].totalPrice * tableInfo[1].fee) / 100)}</Th>
                     <Th isNumeric>Колич.</Th>
                     <Th >Статус</Th>
                     <Th isNumeric>Цена</Th>
@@ -494,10 +508,12 @@ const Orders = () => {
         <div id='for_print' style={{ display:'none' }}>
           <ComponentToPrint
             ref = {printRef}
-            totalPrice = {tableInfo[1].totalPrice}
+            totalPrice = {tableInfo[1].totalPrice + ((tableInfo[1].totalPrice * tableInfo[1].fee) / 100)}
+            comment = {tableInfo[1].comment}
             ordersData = {currentOrderData}
             tableNumber = {currentPath.tableNumber}
             tableType = {currentPath.tableType}
+            fee = {tableInfo[1].fee}
           />
         </div>
         <div id='for_print' style={{display:'none'}}>

@@ -1,19 +1,18 @@
-import { Button, ButtonGroup, Flex, Input, Spacer, Tooltip, useDisclosure } from '@chakra-ui/react'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import { Button, Flex, Input, Spacer, Tooltip, useDisclosure } from '@chakra-ui/react'
+import React, { useContext, useRef, useState } from 'react'
 import { BsPeopleFill, BsPlusSquareFill } from 'react-icons/bs'
 import { MdPlace } from 'react-icons/md'
 import {FaMoneyBillWave} from 'react-icons/fa'
 import {FcAlarmClock} from 'react-icons/fc'
-import {IoIosArrowDropdownCircle} from 'react-icons/io'
 import {BiLogOut} from 'react-icons/bi'
 import styled from 'styled-components'
-import { AiFillMinusSquare, AiFillPrinter, AiOutlineArrowRight } from 'react-icons/ai'
+import { AiFillMinusSquare, AiOutlineArrowRight } from 'react-icons/ai'
 import { MyContext } from '../App'
 import AddTable from '../Components/AddTable'
-import { getDatabase,remove, ref, set, update } from "firebase/database";
+import { remove, ref, set, update } from "firebase/database";
 import { useNavigate } from 'react-router-dom'
 import ComponentToPrint from '../Components/ComponentToPrint'
-import ReactToPrint, { useReactToPrint } from 'react-to-print'
+import { useReactToPrint } from 'react-to-print'
 
 const TableContainer = styled.div`
 display:flex;
@@ -118,14 +117,13 @@ const NewTable = () => {
     const [tableInfo, setTableInfo] = useState({
         tableNumber:null, tableType:'', totalPrice:0
     })
+    const [fee, setFee] = useState(0)
     const [currentOrderData, setCurrentOrderData] = useState();
     const [totalPriceAndNumberToPrint, setTotalPriceAndNumberToPrint] = useState({
         ordersData:[],
         tableNumber:0,
         totalPrice:0
     })
-    const [allowToPrint, setAllowToPrint] = useState(false)
-
     const { isOpen, onOpen, onClose } = useDisclosure()
 
     const navigate=useNavigate()
@@ -134,6 +132,7 @@ const NewTable = () => {
         setTitle(item[1].title)
         setTableNumber(item[1].tableNumber)
         setTableType(item[1].tableType)
+        setFee(item[1].fee)
         setUpdatingTable(true);
         onOpen();
     }
@@ -158,6 +157,7 @@ const NewTable = () => {
             numberOfPeople,
             status: "active",
             start:currentDate,
+            comment: ''
         });
 
       update(ref(db,'settings'),{checkNumber: checkNumber + 1})
@@ -177,60 +177,15 @@ const NewTable = () => {
         })
         navigate(`/order/${numberOfTable}/${typeOfTable}`)
     }
-    // useEffect(()=>{
-    //     callNavigationFromNavbar.tableNumber && navigate(`/order/${callNavigationFromNavbar.tableNumber}/${callNavigationFromNavbar.tableType}`)
-    //   },[callNavigationFromNavbar])
-    const updateData=(e)=>{
-        e.preventDefault()
-        update(ref(db,'todo/'+ specifyRow),{
-          title, tableNumber, tableType
-        })
-        setSpecifyRow(""); setTableType(typeOfTables[0]);
-        setTableNumber(null); setTitle('');
-        setUpdatingTable(false);
-    }
 
-    const changeStatus=(prop,item)=>{
-        if(prop==typeOfTables[1]){
-            update(ref(db,'todo/'+item[1].id),{
-                status:typeOfTables[1]
-            })
-        }
-        else if(prop==typeOfTables[2]){
-            update(ref(db,'todo/'+item[1].id),{
-                status:typeOfTables[2]
-            })
-        }
-        else if(prop==typeOfTables[0]){
-            update(ref(db,'todo/'+item[1].id),{
-                status:typeOfTables[0]
-            })
-        }
-    }
-
-    const redirect=(item)=>{
-        navigate("/order/"+item[1].tableNumber+"/"+2+"/"+item[0])
-    }
-    // const printTable = (item) => {
-    //     if(ordersData.length !== 0){
-    //         var firstStep = ordersData.find(item => item[0] === item[1].tableType)[1]
-    //         var secondStep = Object.values(firstStep)
-    //         var lastStep = Object.entries(secondStep[0])
-    //         setTotalPriceAndNumberToPrint({
-    //             totalPrice: item[1].totalPrice,
-    //             tableNumber: `${item[1].tableNumber}, ${item[1].tableType}`,
-    //             tableData: lastStep
-    //         });
-    //         setAllowToPrint(true)
-    //     }
-    // }
     const handleDoublePrint = useReactToPrint({
         content: () => singleRef.current
     });
     const closedTable = (item) => {
       remove(ref(db,`table/${item[1].tableType}/${item[1].tableNumber}`))
       update(ref(db,"todo/"+item[0]),{
-        status:"empty"
+        status: 'empty',
+        comment: ''
       })
       set(ref(db,"/notify"),{
         change:!notify.change,
@@ -242,9 +197,8 @@ const NewTable = () => {
     }
 
     const setPrintDetail = (item) => {
-      console.log('This is orders data',ordersData)
-      const {tableNumber, tableType, totalPrice} = item[1];
-      setTableInfo({tableNumber, tableType, totalPrice})
+      const {tableNumber, tableType, fee, totalPrice} = item[1];
+      setTableInfo({tableNumber, tableType, fee, totalPrice})
       if(ordersData.length !==0){
         var firstStep = ordersData.find(item => item[0] === tableType)
         if(firstStep){
@@ -254,7 +208,6 @@ const NewTable = () => {
           setCurrentOrderData(lastStep.reverse())
         }
       }
-      console.log('This is current data',lastStep.reverse())
     }
 
     const navigateToOrders = (item) => {
@@ -267,8 +220,10 @@ const NewTable = () => {
      <Button></Button>
      <Flex mt="40px" mx='1.5vw' justifyContent={'center'} flexWrap={'wrap'} alignItems={'center'} w='97vw' >
         <AddTable mx='5px' tableType = {tableType} setTableType={(e)=>setTableType(e)}
-                setUpdatingTable={(e)=>setUpdatingTable(e)}
+                setUpdatingTable = {(e)=>setUpdatingTable(e)}
                 updatingTable={updatingTable}
+                fee = {fee}
+                setFee = {(e) => setFee(e)}
                 setTableNumber ={(e)=>setTableNumber(e)} specifyRow={specifyRow}
                 setSpecifyRow ={(e)=>setSpecifyRow(e)} tableNumber={tableNumber}
                 isOpen={isOpen} onOpen={onOpen} onClose={onClose}
@@ -384,8 +339,11 @@ const NewTable = () => {
                                 <FcAlarmClock/>
                             </SingleInfo>
                             <SingleInfo>
-                                <span>{item[1].totalPrice}</span>
-                                <FaMoneyBillWave/>
+                              <span>{item[1].totalPrice + ((item[1].totalPrice * item[1].fee) / 100)}</span>
+                              <FaMoneyBillWave/>
+                            </SingleInfo>
+                            <SingleInfo>
+                              <span style={{fontSize:'smaller'}}>{item[1].comment}</span>
                             </SingleInfo>
                             </>
                         )}
@@ -397,9 +355,10 @@ const NewTable = () => {
         }
      </TableContainer>
         <div id='for_print' style={{display:'none'}}>
-            <ComponentToPrint
+          <ComponentToPrint
             ref = {singleRef}
-            totalPrice = {tableInfo.totalPrice}
+            totalPrice = {tableInfo.totalPrice + ((tableInfo.totalPrice * tableInfo.fee) / 100)}
+            fee = {tableInfo.fee}
             ordersData = {currentOrderData}
             tableNumber = {tableInfo.tableNumber}
             tableType = {tableInfo.tableType}
