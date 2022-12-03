@@ -47,6 +47,7 @@ const AddTable = ({isOpen, fee, setFee, onOpen, onClose, title, setTitle, tableN
     setSpecifyRow(""); setTableType(typeOfTables[0]);
     setTableNumber(null); setTitle('');
     setUpdatingTable(false);
+    setFee(0)
     onClose()
     }
 
@@ -68,12 +69,18 @@ const AddTable = ({isOpen, fee, setFee, onOpen, onClose, title, setTitle, tableN
           <AlertDialogBody>
                 <Input color={'black'} defaultValue = {tableNumber} required placeholder='Номер стола' onChange={(e)=>setTableNumber(e.target.value)} name="number" type='number'/>
                 <Input color={'black'} placeholder='Название стола(не обязательно)' defaultValue={title} onChange={(e)=>setTitle(e.target.value)} type='text' name='title'/>
-                <Select color={'black'} defaultValue={tableType} onChange = {(e) => setTableType(e.target.value)} placeholder='Тип'>
+                <Select required color={'black'} defaultValue={tableType} onChange = {(e) => setTableType(e.target.value)} placeholder='Тип'>
                 {typeOfTables.map((item,ind) => (
                     <option key = {ind} value = {item}>{item}</option>
                 ))}
                 </Select>
-                <Input color={'black'} placeholder='Обслуживание %:' defaultValue={fee} onChange={(e)=>setFee(Number(e.target.value))} type='number' name='title'/>
+                {/* <Input color={'black'} placeholder='Обслуживание %:' required type='number' name='title'/> */}
+                <div style={{width:'200px', margin:'5px 0'}} class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Обслуживание %:</span>
+                  </div>
+                  <input onChange={(e)=>setFee(Number(e.target.value))} defaultValue={fee} type="number" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"/>
+                </div>
           </AlertDialogBody>
           <AlertDialogFooter>
             <Button colorScheme='red' ref={cancelRef} onClick={onClose}>

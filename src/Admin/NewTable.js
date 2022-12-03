@@ -357,7 +357,7 @@ const NewTable = () => {
         <div id='for_print' style={{display:'none'}}>
           <ComponentToPrint
             ref = {singleRef}
-            totalPrice = {tableInfo.totalPrice + ((tableInfo.totalPrice * tableInfo.fee) / 100)}
+            totalPrice = {tableInfo.fee === 0 ? tableInfo.totalPrice : (tableInfo.totalPrice + ((tableInfo.totalPrice * tableInfo.fee) / 100))}
             fee = {tableInfo.fee}
             ordersData = {currentOrderData}
             tableNumber = {tableInfo.tableNumber}

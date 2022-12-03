@@ -238,10 +238,7 @@ const Orders = () => {
       var id = tablesData.find(item => {
         return item[1].tableNumber == windowPath[2] && item[1].tableType === windowPath[3]
       })
-
       setTableInfo(id)
-      console.log('setTableInfo set', id, tablesData)
-      console.log(windowPath[3], windowPath[2], window.location.pathname)
     }
   },[tablesData])
 
@@ -443,13 +440,13 @@ const Orders = () => {
                       Cтол {currentPath.tableNumber}
                     </Th>
                     <Td>
-                      { tableInfo[1].totalPrice + ((tableInfo[1].fee * tableInfo[1].totalPrice) / 100) } сум
+                      { tableInfo[1].fee == 0 ? tableInfo[1].totalPrice : (tableInfo[1].totalPrice + ((tableInfo[1].totalPrice * tableInfo[1].fee) / 100)) } сум
                     </Td>
                   </Tr>
                 </Tfoot>
                 <Thead>
                   <Tr>
-                    <Th>Итого: {tableInfo[1].totalPrice + ((tableInfo[1].totalPrice * tableInfo[1].fee) / 100)}</Th>
+                    <Th>Итого: {tableInfo[1].fee == 0 ? tableInfo[1].totalPrice : (tableInfo[1].totalPrice + ((tableInfo[1].totalPrice * tableInfo[1].fee) / 100))}</Th>
                     <Th isNumeric>Колич.</Th>
                     <Th >Статус</Th>
                     <Th isNumeric>Цена</Th>
@@ -508,7 +505,7 @@ const Orders = () => {
         <div id='for_print' style={{ display:'none' }}>
           <ComponentToPrint
             ref = {printRef}
-            totalPrice = {tableInfo[1].totalPrice + ((tableInfo[1].totalPrice * tableInfo[1].fee) / 100)}
+            totalPrice = {tableInfo[1].fee == 0 ? tableInfo[1].totalPrice : (tableInfo[1].totalPrice + ((tableInfo[1].totalPrice * tableInfo[1].fee) / 100))}
             comment = {tableInfo[1].comment}
             ordersData = {currentOrderData}
             tableNumber = {currentPath.tableNumber}
