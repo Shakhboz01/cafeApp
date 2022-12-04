@@ -166,7 +166,7 @@ const Products = () => {
             {!show&&(
                 <Flex alignItems={'center'} w='97vw' mx='1.5vw'>
                     <Button onClick={()=>{setShow(true);setIsUpdating(false);setProduct({})}} bg='purple.700' color='white'>
-                        Добавить продукт
+                        Добавить
                     </Button>
                     <Spacer/>
                     <div style={{width:'200px'}} class="input-group">

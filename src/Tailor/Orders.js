@@ -464,17 +464,16 @@ const Orders = () => {
                   </div>
                   <input onChange={(e) => setSearch(e.target.value)} onFocus={(e) => e.target.select()} type="text" class="form-control" value={search} aria-label="Default" aria-describedby="inputGroup-sizing-default"/>
                 </div>
-                <div class="btn-group btn-group" role="group" aria-label="...">
+                <div style={{flexWrap: 'wrap'}} class="btn-group btn-group" role="group" aria-label="...">
+                    <button onClick={() => setTypes('Все')} type="button"
+                            class={`btn btn-${types === 'Все' ? 'success' : 'secondary'}`}>
+                      Все
+                    </button>
                     {typeOfFood.map((item, ind) => (
                         <button onClick={() => setTypes(item)} type="button" key={ind} class={`btn btn-${types === item ? 'success' : 'secondary'}`}>
                           {item}
                         </button>
                     ))}
-                    <button onClick={() => setTypes('Все')} type="button"
-                            class={`btn btn-${types === 'Все' ? 'success' : 'secondary'}`}
-                    >
-                      Все
-                    </button>
                 </div>
               </Box>
             </ProdsHeader>
