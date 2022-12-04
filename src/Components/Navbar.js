@@ -74,7 +74,7 @@ const Navbar = () => {
                  {tablesData.sort((a, b)=>a[1].tableNumber-b[1].tableNumber)
                  .filter(table=>table[1].status == tableStatuses[2]).map(item=>(
                      <div onClick={() => navigations(item)} key={item[0]} style={{cursor:"pointer"}} className='nav-link'  >
-                       {item[1].tableNumber} {item[1].title}
+                       {item[1].tableNumber} {item[1].tableType}
                      </div>
                  ))}
                </ul>
