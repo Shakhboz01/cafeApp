@@ -1,3 +1,4 @@
+import axios from 'axios'
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
@@ -34,6 +35,9 @@ const Navbar = () => {
     localStorage.removeItem('userData');
     setShowNav(false)
   }
+  const analize = async() => {
+    await axios.get(`${process.env.REACT_APP_HOST}/test`)
+  }
   return (
     <div style={{position:"fixed",width:"100vw",zIndex:2 }} >
       <nav className="navbar navbar-expand-lg  navbar-fixed navbar-dark bg-primary">
@@ -58,13 +62,31 @@ const Navbar = () => {
             <li class="dropdown">
               <div class="dropdown-toggle nav-link"style={{color:'white'}} data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Прочие<span class="caret"></span></div>
               <ul class=" bg-dark dropdown-menu">
-                <li className="nav-item">
-                  <Link to="/admin/settings" >
-                    <div className="nav-link" style={{color:'white'}}>
-                      Насртойки
-                    </div>
-                  </Link>
-                </li>
+                  {currentUser.role === 'admin' && (
+                    <>
+                      <li className="nav-item">
+                        <Link to="/admin/settings" >
+                          <div className="nav-link" style={{color:'white'}}>
+                            Насртойки
+                          </div>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/admin/order-history" >
+                          <div className="nav-link" style={{color:'white'}}>
+                            История чеков
+                          </div>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/admin/products" >
+                          <div className="nav-link" style={{color:'white'}}>
+                            Продукты
+                          </div>
+                        </Link>
+                      </li>
+                    </>
+                  )}
                 <li className="nav-item">
                   <Link to="/admin/incomes" >
                     <div className="nav-link" style={{color:'white'}}>
@@ -79,6 +101,7 @@ const Navbar = () => {
                     </div>
                   </Link>
                 </li>
+
               </ul>
             </li>
             {tablesData && tablesData.find(item => item[1].status === tableStatuses[2]) && (
@@ -95,6 +118,11 @@ const Navbar = () => {
              </li>
             )}
           </ul>
+          <div class="my-2 my-lg-0">
+            {currentUser.role === 'admin' && (
+              <button style={{margin:'0 5px'}} onClick={()=>analize()} class="btn btn-warning my-2 my-sm-0" type="submit">Анализ</button>
+            )}
+          </div>
           <div class="my-2 my-lg-0">
             {currentUser && (
               <button onClick={()=>logOut()} class="btn btn-danger my-2 my-sm-0" type="submit">Выйти</button>

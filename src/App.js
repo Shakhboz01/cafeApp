@@ -20,6 +20,8 @@ import PrivateRoute from "./Components/PrivateRoutes";
 import LoginProvider from "./Components/LoginContext";
 import Incomes from "./Pages/Incomes";
 import Outcomes from "./Pages/Outcomes";
+import OrderHistories from "./Pages/OrderHistories";
+import AdminProducts from "./Pages/AdminProducts";
 
 export const MyContext = React.createContext();
 
@@ -41,6 +43,7 @@ function App() {
   const localUser = JSON.parse(localStorage.getItem('userData')) || null;
   const [currentUser, setCurrentUser] = useState(localUser)
   const [signedIn, setSignedIn] = useState(localUser);
+  const [checkHistory, setCheckHistory] = useState([]);
 
   const currentDate = () => {
     const current = new Date();
@@ -204,7 +207,9 @@ const cafeData = {
   incomesData,
   setIncomesData:(e)=>setIncomesData(e),
   setOutcomesData:(e)=>setOutcomesData(e),
-  outcomesData
+  outcomesData,
+  setCheckHistory:(e)=>setCheckHistory(e),
+  checkHistory
 }
 
   return (
@@ -223,10 +228,13 @@ const cafeData = {
               <Route exact path="/" element={<Home/>} />
             </Route>
             <Route path="/products"  element={<Products/>}  />
+            <Route path="/admin/order-history"  element={<OrderHistories/>}  />
             <Route path="/old-tables"  element={<Tables/>}  />
             <Route path="/details"  element={<Details tablesData= {tablesData} statuses={statuses} data={data} />}  />
             <Route path="/order/:tableId/:tableType" element={<Orders tablesData={tablesData} checkData={data} specialProducts={products} setCheckData={(e)=>setData(e)} notify={notify}  callToast={callToast}  statuses={statuses} />}  />
             <Route path="/products/:productId" element={<SHowProduct/>}  />
+            <Route path="/admin/products" element={<AdminProducts/>}  />
+
             <Route path="/tables" element={<NewTable/>}/>
             <Route path="/temporary" element={<TemporaryPage/>}/>
             <Route path="/admin/settings" element={<Settings/>}/>

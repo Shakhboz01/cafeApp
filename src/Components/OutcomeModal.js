@@ -1,6 +1,6 @@
 import { Box,Modal, Button, useDisclosure, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, FormControl, FormLabel, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, ModalFooter, Select, Input } from '@chakra-ui/react'
 import axios from 'axios';
-import { ref, set } from 'firebase/database';
+import { ref, set, update } from 'firebase/database';
 import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { MyContext } from '../App';
@@ -12,9 +12,11 @@ const OutcomeModal = () => {
   const [outcomeType, setOutcomeType] = useState('');
   const [paymentType, setPaymentType] = useState('наличка');
   const [amount, setAmount] = useState(null);
+  const [prodName, setProdName] = useState('');
+  const [prodAmount, setProdAmount] = useState(0);
   const [outcomeDescription, setOutcomeDescription] = useState('');
   const values = useContext(MyContext);
-  const {db,notify, outcomesData, setOutcomesData, typeOfOutcomes} = values;
+  const {db,notify, outcomesData, setOutcomesData, products, typeOfOutcomes} = values;
   const navigate = useNavigate()
   const options = [
     { value: 'chocolate', label: 'Chocolate' },
@@ -22,21 +24,14 @@ const OutcomeModal = () => {
     { value: 'vanilla', label: 'Vanilla' },
   ];
 
-  const submitIncome = (e) =>{
-    e.preventDefault();
-    var data = {
-      amount,
-      outcomeDescription,
-      outcomeType,
-      paymentType
-    }
+  const newOutcome = async(val) =>{
     onClose()
-    axios.post(`${process.env.REACT_APP_HOST}/create-outcome`, data).then(res=> {
+    await axios.post(`${process.env.REACT_APP_HOST}/create-outcome`, val).then(res=> {
       if(res.data.success){
         navigate('/tables')
         alert('Успешно добавлен')
         var copy = outcomesData;
-        copy.unshift({...data, date:''})
+        copy.unshift({...val, date:''})
         setOutcomesData(copy)
         setOutcomeDescription('')
       }
@@ -44,6 +39,39 @@ const OutcomeModal = () => {
         alert(`Что-то пошло не так (${res.data.message})`)
       }
     }).catch(e=>alert(e))
+  }
+
+  const submitIncome = async(e) =>{
+    e.preventDefault();
+    if(outcomeType === 'Приход товаров'){
+      const foundProduct = products.find(item=>item[1].name.toLowerCase() === prodName.toLowerCase())
+      if(foundProduct){
+        newOutcome({
+          amount,
+          outcomeDescription,
+          outcomeType,
+          paymentType,
+          prodName,
+          prodAmount
+        });
+        update(ref(db,'product/'+ foundProduct[0]),{
+          product_left: Number(foundProduct[1].product_left) + prodAmount,
+          is_enough: (Number(foundProduct[1].product_left) + prodAmount) > Number(foundProduct[1].restriction) ? true : false
+        })
+        console.log(Number(foundProduct[1].product_left) + prodAmount, Number(foundProduct[1].restriction), (Number(foundProduct[1].product_left) + prodAmount) > Number(foundProduct[1].restriction))
+      }
+      else{
+        alert('Имя неправильно')
+      }
+    }
+    else{
+      newOutcome({
+        amount,
+        outcomeDescription,
+        outcomeType,
+        paymentType
+      })
+    }
   }
 
   return (
@@ -70,12 +98,23 @@ const OutcomeModal = () => {
                     ))}
                     <option value='Приход товаров'>Приход товаров</option>
                   </Select>
+                  {outcomeType == 'Приход товаров' && (
+                    <>
+                      <Input onChange={(e)=>setProdName(e.target.value)} required = {outcomeType == 'Приход товаров'} placeholder='Введите имя товара' list="brow"/>
+                      <datalist id="brow">
+                        {products.map((item, index)=>(
+                          <option key={index} value={item[1].name}/>
+                        ))}
+                      </datalist>
+                      <Input type='number' onChange={(e)=>setProdAmount(Number(e.target.value))} />
+                    </>
+                  )}
                   <Select my='2' onChange={(e)=>setPaymentType(e.target.value)} placeholder='Способ оплаты'>
                     <option value='наличка'>Наличка</option>
                     <option value='карта'>Карта</option>
                   </Select>
                   <FormLabel>Комментария</FormLabel>
-                  <Input value={outcomeDescription} onChange={(e)=>setOutcomeDescription(e.target.value)} type='text' placeholder='Не обязательно' />
+                    <Input value={outcomeDescription} onChange={(e)=>setOutcomeDescription(e.target.value)} type='text' placeholder='Не обязательно' />
                 </FormControl>
             </ModalBody>
             <ModalFooter>

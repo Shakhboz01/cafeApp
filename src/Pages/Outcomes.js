@@ -1,14 +1,18 @@
 import { Button } from '@chakra-ui/react'
-import React from 'react'
+import React,{useContext} from 'react'
+import { MyContext } from '../App'
 import OutcomeDataGrid from '../Components/OutcomeDataGrid'
 import OutcomeModal from '../Components/OutcomeModal'
 
 const Outcomes = () => {
+  const {currentUser} = useContext(MyContext);
   return (
     <>
       <Button mt='2'></Button>
       <OutcomeModal/>
-      <OutcomeDataGrid/>
+      {currentUser.role === 'admin' && (
+        <OutcomeDataGrid/>
+      )}
     </>
   )
 }

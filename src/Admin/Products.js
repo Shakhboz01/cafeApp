@@ -4,6 +4,7 @@ import { Box, Button, Center, Flex, Select, Spacer } from '@chakra-ui/react'
 import { Input,InputGroup,InputLeftElement,Checkbox } from '@chakra-ui/react'
  import { v4 as uuidv4 } from 'uuid';
  import {MdAutoDelete,MdFavorite} from 'react-icons/md'
+import {FiRefreshCcw} from 'react-icons/fi'
 import {AiFillEdit, AiFillEye} from 'react-icons/ai'
 import styled from "styled-components";
 import { mobile } from "../Components/Responsive";
@@ -83,7 +84,7 @@ font-style:italic;
 
 const Products = () => {
     const values=useContext(MyContext);
-    const {setProducts, products, db, productNaming, currentDate, typeOfFood} = values;
+    const {setProducts, products, db, productNaming, currentUser, currentDate, typeOfFood} = values;
     const [product, setProduct]=useState([]);
     const [printable, setPrintable]=useState(false)
     const [data, setData]=useState([]);
@@ -113,7 +114,8 @@ const Products = () => {
                 lastAdded_at: currentDate,
                 product_left: Number(product_left),
                 restriction: Number(restriction),
-                totalSale:0
+                totalSale:0,
+                is_enough: Number(product_left) > Number(restriction)
             });
             //продано, остался, actualPrice
             setShow(false);
@@ -156,6 +158,11 @@ const Products = () => {
         update(ref(db, 'product/'+item[0]), {
             popular:item[1].popular?false:true
         });
+    }
+    const makeNull = (item) => {
+      update(ref(db, 'product/'+item[0]), {
+        product_left: 0
+      });
     }
     const navigate = useNavigate()
     const redirect = (item) => {
@@ -240,10 +247,12 @@ const Products = () => {
                             onChange={(e)=>getData(e)}
                         />
                     </InputGroup>
-                    <Input _placeholder = {{color: 'inherit'}} placeholder = 'Имеется' required
-                      type ='number' name="product_left" step={0.1} defaultValue = {product.product_left}
-                      onChange = {(e)=>getData(e)}
-                    />
+                    {isUpdating && currentUser.role === 'admin' && (
+                      <Input _placeholder = {{color: 'inherit'}} placeholder = 'Имеется' required
+                        type ='number' name="product_left" step={0.1} defaultValue = {product.product_left}
+                        onChange = {(e)=>getData(e)}
+                      />
+                    )}
                     <Input _placeholder = {{color: 'inherit'}} placeholder = 'Красная зона'
                            required type ='number' name="restriction"
                            defaultValue={product.restriction} onChange={(e)=> getData(e)}/>
@@ -270,10 +279,15 @@ const Products = () => {
                             <Size>Осталось: {item[1].product_left}</Size>
                         </Info>
                         <Box background={item[1].restriction < item[1].product_left ? 'wheat' : 'yellow' } mb='8px' width='100%' alignItems='center' justifyContent='space-evenly' display='flex'>
-                            <MdAutoDelete onClick={()=>removeData(item[0])} style={{fontSize:'33px',cursor:"pointer",color:"gray",  }} />
                             <AiFillEdit onClick={()=>setRow(item)} style={{fontSize:'33px',cursor:"pointer",color:"gray"  }} />
                             <AiFillEye onClick={()=>redirect(item)} style={{fontSize:'33px',cursor:"pointer",color:"gray" }}/>
                             <MdFavorite onClick={() => popularity(item) } style={{fontSize:'33px',cursor:"pointer",color:item[1].popular?"red":"gray"}} />
+                            {currentUser.role === 'admin' && (
+                              <>
+                                <MdAutoDelete onClick={()=>removeData(item[0])} style={{fontSize:'33px',cursor:"pointer",color:"gray",  }} />
+                                <FiRefreshCcw onClick={() => makeNull(item) } style={{fontSize:'33px',cursor:"pointer",color:"gray"}} />
+                              </>
+                            )}
                         </Box>
                     </SetColor>
         </Container>

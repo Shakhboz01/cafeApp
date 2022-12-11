@@ -158,20 +158,20 @@ const NewTable = () => {
 
     const createTable=(typeOfTable, numberOfTable, orderId)=>{
         set(ref(db, `table/${typeOfTable}/${numberOfTable}/info`), {
-            numberOfTable,
-            numberOfPeople,
-            status: "active",
-            start:currentDate,
-            checkNumber
+          numberOfTable,
+          numberOfPeople,
+          status: "active",
+          start:currentDate,
         });
 
-      update(ref(db,'settings'),{checkNumber: checkNumber + 1})
       update(ref(db,'todo/' + orderId),{
         status:'full',
         start:currentDate,
         numberOfPeople,
-        totalPrice: 0
+        totalPrice: 0,
+        checkNumber
       })
+      update(ref(db, 'settings'),{checkNumber: checkNumber + 1})
 
         set(ref(db,"/notify"),{
             change:!notify.change,
@@ -249,20 +249,23 @@ const NewTable = () => {
     }
 
     const setPrintDetail = (item) => {
-      const {tableNumber, tableType, totalPrice} = item[1];
-      setTableInfo({tableNumber, tableType, totalPrice})
+      console.log('it is unknown')
+      const {tableNumber, tableType, totalPrice, checkNumber} = item[1];
+      setTableInfo({tableNumber, tableType, totalPrice, checkNumber})
       if(ordersData.length !==0){
         var firstStep = ordersData.find(item => item[0] === tableType)
+        console.log(ordersData,'ordersData')
         if(firstStep){
           firstStep = firstStep[1]
           var secondStep = Object.values(firstStep)
           var lastStep = Object.entries(secondStep[0])
-          let checkN = Object.values(secondStep[0])
-          setCurrentCheckNum(checkN[checkN.length - 1].checkNumber)
+          console.log(lastStep, 'lastStep is it')
+
           setCurrentOrderData(lastStep.reverse())
           setOrderForPost(secondStep[0])
         }
       }
+      else{console.log('it is empty')}
       // console.log('This is current data', Object.values(secondStep[0]))
     }
 
@@ -365,11 +368,12 @@ const NewTable = () => {
                                     <AiOutlineArrowRight/>
                                 </Button>
                             ):(
-                                <Button onClick={() => setPrintDetail(item)} onDoubleClick={() => closedTable(item)} colorScheme='red'>
-                                    <Tooltip hasArrow label="Закрать стол" >
-                                      <BiLogOut/>
-                                    </Tooltip>
-                                </Button>
+                                // <Button onClick={() => setPrintDetail(item)} onDoubleClick={() => closedTable(item)} colorScheme='red'>
+                                //     <Tooltip hasArrow label="Закрать стол" >
+                                //       <BiLogOut/>
+                                //     </Tooltip>
+                                // </Button>
+                                <></>
                             )
                             }
                     </CreateOrFinish>
@@ -410,12 +414,12 @@ const NewTable = () => {
      </TableContainer>
         <div id='for_print' style={{display:'none'}}>
             <ComponentToPrint
-            ref = {singleRef}
-            totalPrice = {tableInfo.totalPrice}
-            ordersData = {currentOrderData}
-            tableNumber = {tableInfo.tableNumber}
-            tableType = {tableInfo.tableType}
-            checkNumber = {currentCheckNum}
+              ref = {singleRef}
+              totalPrice = {tableInfo.totalPrice}
+              ordersData = {currentOrderData}
+              tableNumber = {tableInfo.tableNumber}
+              tableType = {tableInfo.tableType}
+              checkNumber = {tableInfo.checkNumber}
           />
         </div>
     </div>

@@ -87,7 +87,7 @@ function AlertDialogExample({item, products, tableInfo, currentOrderData, setSea
     setNum(e.target.value);
   }
 
-  const addProductToTable = (e) => {
+  const addProductToTable = async(e) => {
     e.preventDefault();
       push(ref(db, `table/${currentPath.tableType}/${currentPath.tableNumber}`), {
         quantity:num + " " + item[1].addition,
@@ -95,7 +95,7 @@ function AlertDialogExample({item, products, tableInfo, currentOrderData, setSea
         type:item[1].type,
         printable:item[1].printable,
         status:"добавил",
-        total:item[1].price*num,
+        total: Math.round(item[1].price*num),
         desc
     });
     update(ref(db, `todo/${tableInfo[0]}`), {
@@ -110,11 +110,20 @@ function AlertDialogExample({item, products, tableInfo, currentOrderData, setSea
     })
 
     var productInfo = products.find(product => product[1].name === item[1].name && product[1].type === item[1].type)
-    const {product_left, totalSale} = productInfo[1]
+    const {is_enough, product_left, totalSale, restriction, name} = productInfo[1]
     update(ref(db, `product/${productInfo[0]}`), {
       product_left: Number(product_left) - Number(num),
-      totalSale: Number(totalSale) + Number(num)
+      totalSale: Number(totalSale) + Number(num),
+      is_enough: (Number(product_left) - Number(num)) <= Number(restriction) ? false : true
     })
+    if (is_enough && (Number(product_left) - Number(num)) <= Number(restriction) ){
+      var data = {
+        name,
+        prodLeft: Number(product_left) - Number(num),
+      }
+
+    await axios.post(`${process.env.REACT_APP_HOST}/prod-not-enough`,data)
+    }
 
     setSearch("")
     setDesc("");
@@ -251,8 +260,8 @@ const Orders = () => {
       var id = tablesData.find(item => {
         return item[1].tableNumber == windowPath[2] && item[1].tableType === windowPath[3]
       })
-
       setTableInfo(id)
+      console.log('check found',id)
     }
   },[tablesData])
 
@@ -268,8 +277,6 @@ const Orders = () => {
         firstStep = firstStep[1]
         var secondStep = Object.values(firstStep)
         var lastStep = Object.entries(secondStep[0])
-        let checkN = Object.values(secondStep[0])
-        setCurrentCheckNum(checkN[checkN.length - 1].checkNumber)
         setCurrentOrderData(lastStep.reverse())
       }
     }
@@ -283,7 +290,6 @@ const Orders = () => {
         }
       });
     }
-
   },[])
 
   useEffect(()=>{
@@ -324,7 +330,7 @@ const Orders = () => {
       })
     }
   }
-  const deleteRow=(item)=>{
+  const deleteRow=async(item)=>{
 
     remove(ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}/${item[0]}`))
 
@@ -339,24 +345,30 @@ const Orders = () => {
     })
 
     var productInfo = products.find(product => product[1].name === item[1].name && product[1].type === item[1].type)
-    const {product_left, totalSale} = productInfo[1]
+    const {product_left, name, restriction, is_enough, totalSale} = productInfo[1]
     var num = item[1].quantity.split(' ')[0]
     update(ref(db, `product/${productInfo[0]}`), {
       product_left: product_left + Number(num),
-      totalSale: totalSale - Number(num)
+      totalSale: totalSale - Number(num),
+      is_enough: (Number(product_left) + Number(num)) > Number(restriction) ? true : false
     })
+    if (!is_enough && (Number(product_left) + Number(num)) > Number(restriction)){
+      var data = {
+        name,
+        prodLeft: Number(product_left) + Number(num),
+        returned: true
+      }
+      await axios.post(`${process.env.REACT_APP_HOST}/prod-not-enough`,data)
+    }
   }
 
-  const closedTable=()=>{
+  const closedTable = async ()=>{
     try {
       if(ordersData.length !==0){
-        var firstStep = ordersData.find(item => item[0] === windowPath[3])
-        if(firstStep){
-          firstStep = firstStep[1]
-          var secondStep = Object.values(firstStep)
-          var checkNum = Object.values(secondStep[0])
-          checkNum = checkNum[checkNum.length -1].checkNumber
-          axios.post('http://localhost:5000/set-check', {checkNumber: checkNum,data: secondStep[0]})
+        // var firstStep = ordersData.find(item => item[0] === windowPath[3])
+        if(currentOrderData){
+          await axios.post('http://localhost:5000/set-check', {tableType: currentPath.tableType, checkNumber: tableInfo[1].checkNumber, totalPrice: tableInfo[1].totalPrice, data: currentOrderData})
+          console.log('i posted', currentOrderData)
         }
       }
       remove(ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}`))
@@ -368,12 +380,14 @@ const Orders = () => {
     }
     checkData.length==1 && setCheckData([])
 
-    set(ref(db,"/notify"),{
-      change:!notify.change,
-      description:`Стол ${currentPath.tableNumber} был закрыт `,
-      status:"warning",
-      title:"Заказ завершен"
-    })
+    setTimeout(() => {
+      set(ref(db,"/notify"),{
+        change:!notify.change,
+        description:`Стол ${currentPath.tableNumber} был закрыт `,
+        status:"warning",
+        title:"Заказ завершен"
+      })
+    }, 500);
   }
 
   const handleChange=(item)=>{
@@ -532,7 +546,7 @@ const Orders = () => {
         <div id='for_print' style={{ display:'none' }}>
           <ComponentToPrint
             ref = {printRef}
-            checkNumber = {currentCheckNum}
+            checkNumber = {tableInfo[1].checkNumber}
             totalPrice = {tableInfo[1].totalPrice}
             ordersData = {currentOrderData}
             tableNumber = {currentPath.tableNumber}
