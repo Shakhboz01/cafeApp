@@ -96,17 +96,16 @@ const OutcomeModal = () => {
                     {typeOfOutcomes && typeOfOutcomes.map((naming, ind)=>(
                       <option key={ind} value={naming}>{naming}</option>
                     ))}
-                    <option value='Приход товаров'>Приход товаров</option>
                   </Select>
                   {outcomeType == 'Приход товаров' && (
                     <>
-                      <Input onChange={(e)=>setProdName(e.target.value)} required = {outcomeType == 'Приход товаров'} placeholder='Введите имя товара' list="brow"/>
+                      <Input onChange={(e)=> setProdName(e.target.value)} required = {outcomeType == 'Приход товаров'} placeholder='Введите имя товара' list="brow"/>
                       <datalist id="brow">
                         {products.map((item, index)=>(
                           <option key={index} value={item[1].name}/>
                         ))}
                       </datalist>
-                      <Input type='number' onChange={(e)=>setProdAmount(Number(e.target.value))} />
+                      <Input placeholder='Сколько?' type='number' onChange={(e)=>setProdAmount(Number(e.target.value))} />
                     </>
                   )}
                   <Select my='2' onChange={(e)=>setPaymentType(e.target.value)} placeholder='Способ оплаты'>

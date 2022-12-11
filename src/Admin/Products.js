@@ -10,7 +10,7 @@ import styled from "styled-components";
 import { mobile } from "../Components/Responsive";
 import { MyContext } from "../App";
 import { CgChevronLeft, CgChevronRight } from 'react-icons/cg';
-import { ButtonBase } from '@mui/material';
+// import { ButtonBase } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 const MainContainer=styled.div`

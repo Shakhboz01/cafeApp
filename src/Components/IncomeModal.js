@@ -64,7 +64,6 @@ const IncomeModal = () => {
                     {typeOfIncomes && typeOfIncomes.map((naming, ind)=>(
                       <option key={ind} value={naming}>{naming}</option>
                     ))}
-                    <option value='От стола'>От стола</option>
                   </Select>
                   <Select my='2' onChange={(e)=>setPaymentType(e.target.value)} placeholder='Способ оплаты'>
                     <option value='наличка'>Наличка</option>
