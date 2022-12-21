@@ -1,6 +1,6 @@
 import { getDatabase, remove, push, ref, set, update } from "firebase/database";
 import React,{useContext, useEffect, useState} from 'react'
-import { Box, Button, Center, Flex, Select, Spacer } from '@chakra-ui/react'
+import { Box, Button, Center, Flex, FormControl, FormLabel, Select, Spacer } from '@chakra-ui/react'
 import { Input,InputGroup,InputLeftElement,Checkbox } from '@chakra-ui/react'
  import { v4 as uuidv4 } from 'uuid';
  import {MdAutoDelete,MdFavorite} from 'react-icons/md'
@@ -205,25 +205,33 @@ const Products = () => {
             )}
             {show&&(
                 <form onSubmit={(e)=>isUpdating ? updateData(e) : handleSubmit(e)}>
+                  <FormControl>
+                  <FormLabel>Имя продукта</FormLabel>
                     <Input
                         defaultValue={product.name}
                         placeholder='Имя продукта'
                         _placeholder={{ color: 'inherit' }}
                         name="name" onChange={(e)=>getData(e)}
                         required
-                    />
+                        />
+                  </FormControl>
+                  <FormControl>
+                  <FormLabel>УРЛ картинки</FormLabel>
                     <Input
                         defaultValue={product.url}
                         placeholder=' УРЛ картинки'
                         required
                         name="url" onChange={(e)=>getData(e)}
                         _placeholder={{ color: 'inherit' }}
-                    />
-                    <Select variant='filled'defaultValue={product.type}  name="type" onChange={(e)=>getData(e)} placeholder='Выберите тип продукта ' >
+                        />
+                  </FormControl>
+
+                    <Select variant='filled'defaultValue={product.type}  name="type" onChange={(e)=>getData(e)} placeholder='Выберите тип продукта ' my={2}>
                         {typeOfFood.map((item, ind) => (
                         <option key={ind} value = {item}>{item}</option>
                         ))}
                     </Select>
+
                     <Checkbox checked = {printable} onChange = {(e)=> setPrintable(e.target.checked)} margin="10px">
                         Вывести чек на этот товар
                     </Checkbox>
@@ -235,24 +243,32 @@ const Products = () => {
                           <option value={naming} key={ind}>{naming}</option>
                         ))}
                     </Select>
-                    <InputGroup>
-                        <InputLeftElement
+                    {/* <InputGroup> */}
+                        {/* <InputLeftElement
                           pointerEvents='none' color='gray.300'
                           fontSize='1.2em'
                           children='$'
-                        />
+                        /> */}
+                        <FormControl>
+                        <FormLabel>Cтоимость</FormLabel>
                         <Input
                             _placeholder = {{color: 'inherit'}} placeholder = 'Стоимость'
                             required type='number' name="price" step={0.1} defaultValue={product.price}
                             onChange={(e)=>getData(e)}
-                        />
-                    </InputGroup>
-                    {isUpdating && currentUser.role === 'admin' && (
+                            />
+                        </FormControl>
+                    {/* </InputGroup> */}
+                    {/* {!isUpdating && ( */}
+                    <FormControl>
+
+                      <FormLabel>Имеется</FormLabel>
                       <Input _placeholder = {{color: 'inherit'}} placeholder = 'Имеется' required
                         type ='number' name="product_left" step={0.1} defaultValue = {product.product_left}
                         onChange = {(e)=>getData(e)}
                       />
-                    )}
+                    </FormControl>
+                    {/* )} */}
+                    <FormLabel>Красная зона</FormLabel>
                     <Input _placeholder = {{color: 'inherit'}} placeholder = 'Красная зона'
                            required type ='number' name="restriction"
                            defaultValue={product.restriction} onChange={(e)=> getData(e)}/>

@@ -48,7 +48,7 @@ const OrderHistories = () => {
                     <td>{item[1].desc}</td>
                   </tr>
             ))}
-            {checkHistory && (
+            {checkHistory.length > 0 && (
               <tr>
               <th> {checkHistory[checkHistory.length - 1][1].totalPrice} сум </th>
               <th>Открыт в: {checkHistory[checkHistory.length - 1][1].start} </th>

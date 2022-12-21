@@ -367,8 +367,8 @@ const Orders = () => {
       if(ordersData.length !==0){
         // var firstStep = ordersData.find(item => item[0] === windowPath[3])
         if(currentOrderData){
-          await axios.post('http://localhost:5000/set-check', {tableType: currentPath.tableType, checkNumber: tableInfo[1].checkNumber, totalPrice: tableInfo[1].totalPrice, data: currentOrderData})
-          console.log('i posted', currentOrderData)
+          await axios.post(`${process.env.REACT_APP_HOST}/set-check`, {tableType: currentPath.tableType, checkNumber: tableInfo[1].checkNumber, totalPrice: tableInfo[1].totalPrice, data: currentOrderData})
+          // console.log('i posted', currentOrderData)
         }
       }
       remove(ref(db,`table/${currentPath.tableType}/${currentPath.tableNumber}`))

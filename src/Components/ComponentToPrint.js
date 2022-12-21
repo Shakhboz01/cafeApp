@@ -28,13 +28,13 @@ const ComponentToPrint = React.forwardRef((props,ref)=>{
         Спасибо что выбрали нас!
       </TableCaption>
       <TableCaption fontSize='xl' color='black'm='0' fontWeight='bold'>
-        90 195 99 92
+        99 427-00-66
       </TableCaption>
 
       <Thead fontSize='28px' color='black'>
         <Tr fontWeight='bold' border='2px solid black'>
           <Th width='40%' fontSize='38px' colSpan={3} textAlign='center' color='black' border="2px solid">
-            Sizning cafe
+            SARTEPO BALIQ
           </Th>
         </Tr>
         <Tr fontWeight='bold' color='black' border="2px solid black"  >

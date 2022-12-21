@@ -309,8 +309,8 @@ const NewTable = () => {
         {tablesData && tablesData.filter(table => currentTypeOfTable == 'Все' ? table : table[1].tableType === currentTypeOfTable)
                                  .filter(filt=>filt[1].tableNumber.toLowerCase().includes(searchName.toLowerCase()))
                                  .sort(((a,b)=>a[1].tableNumber - b[1].tableNumber))
-                                 .map(item => (
-            <Table>
+                                 .map((item, index) => (
+            <Table key={index}>
                 <TableHeader>
                     <Dropdown>
                         {/* <IoIosArrowDropdownCircle/> */}
@@ -348,7 +348,7 @@ const NewTable = () => {
                             item[1].status === tableStatuses[0] ? (
                                 <div style={{display:'flex',width:'100%', justifyContent:'center', alignItems:'center' }} >
                                     <AiFillMinusSquare style={{cursor:"pointer",fontSize:"39px"}} onClick={()=> setNumberOfPeople(prev=>prev - 1)} />
-                                    <Input width='50px' size='sm' value={numberOfPeople} variant='filled' m='5px' required type='number'/>
+                                    <Input width='50px' size='sm' defaultValue={numberOfPeople} variant='filled' m='5px' onChange={(e)=>setNumberOfPeople(e.target.value)} required type='number'/>
                                     <BsPlusSquareFill style={{cursor:"pointer", fontSize:"30px"}} onClick={()=>setNumberOfPeople(prev => prev + 1)} />
                                 </div>
                             ) : (

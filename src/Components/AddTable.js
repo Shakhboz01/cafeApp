@@ -19,14 +19,14 @@ import { MyContext } from '../App';
 const AddTable = ({isOpen, onOpen, onClose, title,setTitle,tableNumber,updatingTable,setUpdatingTable,setTableNumber, specifyRow, setSpecifyRow, setTableType, tableType,children}) => {
   const cancelRef = React.useRef()
   const values = useContext(MyContext);
-  const {currentDate, tableStatuses, typeOfTables, db} = values;
-  let id=uuidv4()
+  const { tableStatuses, typeOfTables, db} = values;
+  let id = uuidv4()
 
   const createNewTable=(e)=>{
     e.preventDefault();
     set(ref(db, 'todo/'+id), {
         title, tableNumber,
-        tableType: typeOfTables[0], id,
+        tableType: tableType, id,
         status: tableStatuses[0]
     });
     setTitle("")
